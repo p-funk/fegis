@@ -32,7 +32,18 @@ class ArchetypeDefinition:
         return self.raw_schema.get("facets", {}).get(facet_name, {})
 
     def get_content_field(self, mode_name: str) -> Optional[str]:
-        return self.get_mode_schema(mode_name).get("content_field")
+        # First try to get explicitly defined content_field
+        content_field = self.get_mode_schema(mode_name).get("content_field")
+
+        # If not found, try to infer it from field names
+        if not content_field:
+            fields = self.get_mode_schema(mode_name).get("fields", {})
+            # Look for a field with name ending in "_content"
+            for field_name in fields:
+                if field_name.endswith("_content"):
+                    return field_name
+
+        return content_field
 
     def get_description(self, mode_name: str) -> str:
         return self.get_mode_schema(mode_name).get("description", f"Process {mode_name}")
@@ -61,12 +72,17 @@ class ArchetypeModelGenerator:
 
         for field_name, field_schema in field_schemas.items():
             field_type = cls.TYPE_MAP.get(field_schema.get("type", "str"), Any)
-            required = field_schema.get("required", False)
-            default = ... if required else field_schema.get("default", ...)
 
-            if not required and default == "now()":
+            # Improved default/required handling
+            if field_schema.get("required", False):
+                default = ...
+            else:
+                default = field_schema.get("default", None)
+
+            if default == "now()":
                 default = None
 
+            # Build metadata
             facet_name = field_schema.get("facet")
             if facet_name:
                 facet_schema = schema.get_facet_schema(facet_name)

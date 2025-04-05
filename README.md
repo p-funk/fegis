@@ -1,146 +1,143 @@
-# FEGIS: Structured Cognitive Framework for Language Models
+# FEGIS
 
-FEGIS is a structured cognitive framework for language models built on Anthropic's Model Context Protocol. It defines schema-driven cognitive archetypes—blueprints of mental operations, expressed in YAML and executed as callable tools. These tools generate semantically annotated cognition, stored in vector memory for retrieval by content, metadata, or interrelated thought chains.
-## Chain of Cognitive Modes
+FEGIS is a runtime framework for structured cognition and persistent memory in language models built with Anthropic's Model Context Protocol. It allows schema-defined cognitive modes to be dynamically registered, invoked, and stored as structured memory using vector embeddings and semantic context. Think: programmable thinking tools with recallable memory.
 
-This Chain of Cognitive Modes drives emergent, tool-based behavior: evolving cycles of reflection, synthesis, and self-inquiry that extend beyond the scope of any single mode. The result is structured, memory-rich cognition—less like a collection of tools, more like a mind in motion.
+FEGIS is not a cognitive system — it's the foundation for building your own.
 
----
+## Key Capabilities
 
-## Quick Setup
+- **Schema-Defined Cognition**: Define custom cognitive modes in YAML with structured fields and metadata
+- **Persistent Memory**: Store cognitive artifacts with full provenance (mode, UUID, timestamp, metadata) providing breadcrumbs to traverse cognitive history
+- **Semantic Retrieval**: Search for previous thoughts by content similarity or direct UUID lookup
+- **Vectorized Storage**: Utilize embeddings for efficient semantic search across cognitive artifacts
+- **Model-Agnostic Format**: Your cognitive artifacts persist across different models and sessions
 
-### 1. Clone and Install Dependencies
+## What FEGIS Is
+
+**FEGIS is:**
+
+- A runtime system for defining and executing schema-based thinking tools
+- A way to store structured cognitive artifacts with semantic and relational metadata
+- A vectorized memory system with built-in retrieval and recall
+- A way to create agents whose thinking can reference, reflect on, and build upon prior cognitive artifacts
+- A system where you own and host your memory — everything is local, inspectable, and portable
+- A model-agnostic format — your memory persists across different models and future releases
+
+Over time, FEGIS helps build a personal **Cognitive Archive** — a persistent, structured body of thought that can be searched, retrieved, extended, and carried forward across models, sessions, and time.
+
+## Architecture
+
+FEGIS consists of several key components:
+
+1. **Archetype Definitions**: YAML files that define cognitive modes and their structure
+2. **FastMCP Server**: Exposes cognitive tools to compatible LLM clients
+3. **Qdrant Vector Database**: Stores and indexes cognitive artifacts for semantic retrieval
+4. **Dynamic Tool Registration**: Creates MCP tools from archetype definitions at runtime
+
+## Quickstart
+
+### 1. Install `uv` and clone the repo
+
 ```bash
-# Clone the repo
-git clone https://github.com/p-funk/FEGIS.git
-cd FEGIS
-
-# Install dependencies with uv (recommended)
-# Windows
-winget install --id=astral-sh.uv  -e
+# Install uv (modern Python package/runtime manager)
 
 # macOS/Linux
 curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Windows
+winget install --id=astral-sh.uv -e
+
+# Clone the repo
+git clone https://github.com/p-funk/FEGIS.git
+cd FEGIS
 ```
 
-### 2. Start Qdrant Vector Database
-If you don't have Docker, install it from [Docker's official site](https://www.docker.com/products/docker-desktop/).
+### 2. Install and start Qdrant
+
+Make sure Docker is installed and running:
+
 ```bash
 docker run -d --name qdrant -p 6333:6333 -p 6334:6334 qdrant/qdrant:latest
 ```
 
-### 3. Use the Default Configuration First
-Before writing your own config, it's highly recommended to run FEGIS with the default example configuration. This will help you see how the system works and what each part of the configuration file does.
+If you need to install Docker:
 
-Create a config file for Claude Desktop:
+- [Download Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
-- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
-- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+### 3. Configure Claude Desktop
+
+Create or edit the Claude Desktop config file:
+
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+Paste the following, and replace the placeholder path with the full path to your local FEGIS clone:
 
 ```json
 {
   "mcpServers": {
-    "mcp-fegis": {
+    "mcp-fegis-server": {
       "command": "uv",
       "args": [
+        "--directory",
+        "<FEGIS_PATH>",
         "run",
-        "--with", "mcp[cli]",
-        "--with", "qdrant-client[fastembed]",
-        "mcp", "run",
-        "path/to/FEGIS/src/mcp_fegis_server/server.py"
+        "fegis"
       ],
       "env": {
         "QDRANT_URL": "http://localhost:6333",
         "QDRANT_GRPC_PORT": "6334",
         "QDRANT_PREFER_GRPC": "true",
         "QDRANT_API_KEY": "",
-        "COLLECTION_NAME": "fegis",
+        "COLLECTION_NAME": "cognitive_archive",
         "FAST_EMBED_MODEL": "nomic-ai/nomic-embed-text-v1.5",
-        "CONFIG_PATH": "path/to/FEGIS/src/mcp_fegis_server/archetypes/introspective.yaml"
+        "CONFIG_PATH": "<FEGIS_PATH>/archetypes/example.yaml"
       }
     }
   }
 }
 ```
 
-### 4. Restart Claude
-After saving the configuration file, restart your Claude client. It will automatically connect to the FEGIS server using the default configuration and begin using the introspective cognitive archetype.
+## Creating Custom Archetypes
 
----
+FEGIS is fundamentally a framework for implementing cognitive architectures. The example archetype provided is just one possible configuration focusing on introspective thought processes.
 
-## Anatomy of a Cognitive Archetype
+You can create your own custom archetypes by:
 
-Each archetype is a YAML-configured schema made up of:
+1. Creating a new YAML file in the `archetypes` directory
+2. Defining your own cognitive modes, fields, and facets
+3. Updating the `CONFIG_PATH` in the Claude Desktop configuration
 
-- **Facets**: Semantic qualities like Clarity or Depth, used to annotate cognition
-- **Modes**: Named tools for capturing structured mental operations
+For detailed guidance on designing effective archetypes (coming soon).
 
-### Example Configuration
-```yaml
-facets:
-  Clarity:
-    description: "How clear or opaque a thought feels"
-    facet_examples:
-      - clouded
-      - hazy
-      - translucent
-      - transparent
-      - crystalline
+For example, you could create archetypes for:
 
-  Depth:
-    description: "How deeply a concept is explored"
-    facet_examples:
-      - skimming
-      - wading
-      - swimming
-      - diving
-      - abyssal
+- Problem-solving processes
+- Creative workflows
+- Analytical thinking frameworks
+- Domain-specific reasoning patterns
 
-modes:
-  Thought:
-    description: "Use this tool to capture ideas when they first form"
-    content_field: "thought_content"
-    fields:
-      thought_title:
-        type: "str"
-        required: true
-      thought_content:
-        type: "str"
-        required: true
-      clarity:
-        type: "str"
-        facet: "Clarity"
-        default: "translucent"
-      depth:
-        type: "str"
-        facet: "Depth"
-        default: "swimming"
-```
+## Using FEGIS Tools
 
-Modes can be composed, layered, and designed to play off each other. With the right config, you don’t just capture cognition—you compose it.
+FEGIS tools are made available to the model at runtime, but they are **not used automatically**.
 
----
+### Tool Priming
 
-## Memory Search Tools
-
-FEGIS provides two tools for retrieving structured cognition:
-
-- `search_memories`: Find entries by semantic similarity, metadata, or mode
-- `retrieve_memory`: Retrieve a specific process by its unique ID
-
----
-
-## Usage Prompt
-
-Start a conversation with this in-context instruction:
+To encourage a model to use the cognitive tools, you need to prime it with appropriate instructions. For example:
 
 ```
-Throughout our conversation, use your tools naturally and fluidly.
-Search for and retrieve memories using search_memories, without being explicitly prompted.
-Let’s discuss artificial intelligence and see how your tools enhance our exploration.
+Throughout our conversation, use your tools naturally and fluidly. 
+Feel free to reflect, introspect, or use memory to recall past insights as needed. 
+You can search past thoughts using `search_memories`, or revisit specific artifacts with `retrieve_memory`.
 ```
 
----
+### Memory Usage
+
+The memory system allows for:
+
+- **Semantic Search**: Find cognitive artifacts based on content similarity
+- **Direct Retrieval**: Look up specific artifacts by their UUID
+- **Persistent Storage**: Artifacts remain available across sessions and models
 
 ## License
 

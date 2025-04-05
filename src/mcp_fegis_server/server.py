@@ -15,9 +15,9 @@ from mcp.server.fastmcp import FastMCP, Context
 from pydantic import BaseModel, Field
 from qdrant_client.http.models import Filter, FieldCondition, MatchValue
 
-from model_builder import ArchetypeDefinition, ArchetypeModelGenerator, ArchetypeMemoryMapper
-from qdrant import QdrantConnector
-from settings import ConfigSettings, QdrantSettings
+from mcp_fegis_server.model_builder import ArchetypeDefinition, ArchetypeModelGenerator, ArchetypeMemoryMapper
+from mcp_fegis_server.qdrant import QdrantConnector
+from mcp_fegis_server.settings import ConfigSettings, QdrantSettings
 
 # Load settings and initialize archetype definition
 config_settings = ConfigSettings()

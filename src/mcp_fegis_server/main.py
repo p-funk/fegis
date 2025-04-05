@@ -27,7 +27,7 @@ def main():
 
     args = parser.parse_args()
 
-    from fegis.server import mcp
+    from mcp_fegis_server.server import mcp
 
     # Run the server with the configured transport
     mcp.run(transport=args.transport)
