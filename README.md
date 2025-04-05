@@ -1,24 +1,15 @@
-# FEGIS: Structured Memory & Cognitive Framework for LLMs
+# FEGIS: Structured Cognitive Framework for Language Models
 
-FEGIS is a Model Context Protocol server that gives LLMs structured, persistent memory through customizable cognitive tools defined in your schema.
+FEGIS is a structured cognitive framework for language models built on Anthropic's Model Context Protocol. It defines schema-driven cognitive archetypes—blueprints of mental operations, expressed in YAML and executed as callable tools. These tools generate semantically annotated cognition, stored in vector memory for retrieval by content, metadata, or interrelated thought chains.
+## Chain of Cognitive Modes
 
-## What is FEGIS?
+This Chain of Cognitive Modes drives emergent, tool-based behavior: evolving cycles of reflection, synthesis, and self-inquiry that extend beyond the scope of any single mode. The result is structured, memory-rich cognition—less like a collection of tools, more like a mind in motion.
 
-FEGIS transforms how AI models think and remember by creating structured memory tools based on your custom schema. Each memory mode you define becomes a specific thought tool the model can use, with all memories persisting across conversations.
-
-When an LLM uses these memory tools:
-- It follows the specific thought structure you've defined
-- It considers the qualitative dimensions (facets) you've specified
-- The memory persists across all conversations in a vector database
-- All memories become searchable through semantic retrieval
-- Your memories work across different models and providers
-
-FEGIS doesn't just store information - it structures how AI models organize and retrieve their thoughts.
+---
 
 ## Quick Setup
 
 ### 1. Clone and Install Dependencies
-
 ```bash
 # Clone the repo
 git clone https://github.com/p-funk/FEGIS.git
@@ -38,15 +29,15 @@ If you don't have Docker, install it from [Docker's official site](https://www.d
 docker run -d --name qdrant -p 6333:6333 -p 6334:6334 qdrant/qdrant:latest
 ```
 
-### 3. Configure Your MCP Client
+### 3. Use the Default Configuration First
+Before writing your own config, it's highly recommended to run FEGIS with the default example configuration. This will help you see how the system works and what each part of the configuration file does.
 
-For Claude Desktop, create a configuration file at:
+Create a config file for Claude Desktop:
+
 - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 
-Add this JSON configuration:
-
-```json 
+```json
 {
   "mcpServers": {
     "mcp-fegis": {
@@ -65,28 +56,37 @@ Add this JSON configuration:
         "QDRANT_API_KEY": "",
         "COLLECTION_NAME": "fegis",
         "FAST_EMBED_MODEL": "nomic-ai/nomic-embed-text-v1.5",
-        "CONFIG_PATH": "path/to/your/config.yaml"
+        "CONFIG_PATH": "path/to/FEGIS/src/mcp_fegis_server/archetypes/introspective.yaml"
       }
     }
   }
 }
 ```
 
-### 4. Create Your Config File
+### 4. Restart Claude
+After saving the configuration file, restart your Claude client. It will automatically connect to the FEGIS server using the default configuration and begin using the introspective cognitive archetype.
 
-Start simple create a `config.yaml` file to define a basic cognitive framework that will store it's thoughts including their clarity and depth.:
+---
 
+## Anatomy of a Cognitive Archetype
+
+Each archetype is a YAML-configured schema made up of:
+
+- **Facets**: Semantic qualities like Clarity or Depth, used to annotate cognition
+- **Modes**: Named tools for capturing structured mental operations
+
+### Example Configuration
 ```yaml
 facets:
   Clarity:
     description: "How clear or opaque a thought feels"
-    facet_examples:  # These examples guide the model directly
+    facet_examples:
       - clouded
       - hazy
       - translucent
       - transparent
       - crystalline
-      
+
   Depth:
     description: "How deeply a concept is explored"
     facet_examples:
@@ -117,56 +117,43 @@ modes:
         default: "swimming"
 ```
 
-A more complex sample configuration is available in the `/sample_configs/phenomenology.yaml` file.
+Modes can be composed, layered, and designed to play off each other. With the right config, you don’t just capture cognition—you compose it.
 
-A more indepth dive into crafting cognitive memory tools [FEGIS_GUIDE](docs/FEGIS_GUIDE.md)
+---
 
-### 5. Restart Your MCP Client
+## Memory Search Tools
 
-After configuration, restart your MCP client to load the FEGIS server.
+FEGIS provides two tools for retrieving structured cognition:
 
-## Why FEGIS Matters
+- `search_memories`: Find entries by semantic similarity, metadata, or mode
+- `retrieve_memory`: Retrieve a specific process by its unique ID
 
-FEGIS offers distinct advantages over other memory approaches:
+---
 
-- **Beyond Simple RAG**: Not just embedding documents - this is structured data with cognitive dimensions
-- **Custom Cognitive Frameworks**: Define any memory structure through simple YAML configuration
-- **True Persistence**: Data retains its structure and relationships across all sessions
-- **Emergent Tool Selection**: Models develop agency in choosing which cognitive tools to use when appropriate
-- **Semantic Memory**: Find related memories without exact queries
-- **Complete Transparency**: View and manage all memory entries through Qdrant's dashboard interface
-- **Privacy-Focused**: No external API calls or cloud dependencies - everything runs on your machine
+## Usage Prompt
 
-## Memory Tools
-
-FEGIS has two built-in search tools:
-
-- **search_memories**: Find stored entries by semantic similarity, mode, or metadata
-- **retrieve_memory**: Get a specific memory entry by its ID
-
-## Usage Example
-
-Start a conversation with your MCP-enabled client and suggest natural tool usage:
+Start a conversation with this in-context instruction:
 
 ```
-Throughout our conversation, use your tools naturally and fluidly as part of your discourse.
-Search for and retrieve memories without being explicitly prompted to search_memories when relevant.
-Let's discuss artificial intelligence and see how your tools enhance our exploration.
+Throughout our conversation, use your tools naturally and fluidly.
+Search for and retrieve memories using search_memories, without being explicitly prompted.
+Let’s discuss artificial intelligence and see how your tools enhance our exploration.
 ```
+
+---
 
 ## License
 
-This project is licensed under the [PolyForm Noncommercial License 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0/).
+Licensed under the [PolyForm Noncommercial License 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0/).
 
 - **Free** for personal and non-commercial use
-- **Commercial license** required for reselling, integration into paid products, training models on the code, or hosting as a service
+- **Commercial license** required for resale, integrations, or hosted services
 
 Contact goldenp@ptology.com for commercial licensing.
 
-## Support This Project
+---
 
-No upsells, no paywalls—just a guy trying to make the experience of using LLMs better than talking to a knowledgeable goldfish.
+## Support
 
-☕ [Buy me a coffee](https://ko-fi.com/perrygolden)
-
+☕ [Buy me a coffee](https://ko-fi.com/perrygolden)  
 💖 [Sponsor on GitHub](https://github.com/sponsors/p-funk)
