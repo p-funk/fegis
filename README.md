@@ -119,6 +119,8 @@ modes:
 
 A more complex sample configuration is available in the `/sample_configs/phenomenology.yaml` file.
 
+A more indepth dive into crafting cognitive memory tools [FEGIS_GUIDE](docs/FEGIS_GUIDE.md)
+
 ### 5. Restart Your MCP Client
 
 After configuration, restart your MCP client to load the FEGIS server.
