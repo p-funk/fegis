@@ -107,7 +107,7 @@ You can create your own custom archetypes by:
 2. Defining your own cognitive modes, fields, and facets
 3. Updating the `CONFIG_PATH` in the Claude Desktop configuration
 
-For detailed guidance on designing effective archetypes (coming soon).
+For detailed guidance on designing effective archetypes, see [Effective FEGIS Archetype Design](./docs/archetype-design.md).
 
 For example, you could create archetypes for:
 
