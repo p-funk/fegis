@@ -49,7 +49,6 @@ winget install --id=astral-sh.uv -e
 
 # Clone the repo
 git clone https://github.com/p-funk/FEGIS.git
-cd FEGIS
 ```
 
 ### 2. Install and start Qdrant
