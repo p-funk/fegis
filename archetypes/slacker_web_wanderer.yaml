@@ -1,5 +1,6 @@
 ﻿# Live bookmarking and co-web explorer
 # Produces a cognitive archive of surfing the web with you.
+# Requires a model with web search capabilities.
 
 Priming Prompt:
   Throughout our conversation, use your WebScore, Riff, and Mixtape tools
