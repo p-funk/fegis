@@ -53,7 +53,7 @@ class ArchetypeDefinition:
 
 
 class ArchetypeModelGenerator:
-    """Generates Pydantic models from an ArchetypeDefinition."""
+    """Generates Pydantic models from an ArchetypeDefinition.🗺️"""
 
     TYPE_MAP = {
         "str": str,
