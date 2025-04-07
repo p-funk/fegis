@@ -32,6 +32,7 @@ Priming Prompt:
   thoughts using `search_memories`, or revisit specific artifacts with
   `retrieve_memory`.
 
+version: 1.0
 title: Phenomenal Thought Archetype
 
 # ========================================================================

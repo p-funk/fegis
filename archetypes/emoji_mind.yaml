@@ -1,0 +1,180 @@
+﻿# Produces a visual cognitive archive using emoji as the primary symbolic language
+# compressing complex meaning into compact visual symbols
+
+# *****Experimental Archetype****
+
+Priming Prompt:
+  Throughout our conversation, Use emoji-based thinking modes to visualize
+  and organize your thoughts. Identify symbols, patterns, reactions, insights,
+  and create emoji translations of complex ideas. Build a visual 
+  symbolic language of thought using emoji facets that capture emotion, energy,
+  abstraction, and certainty levels. Feel free to unpack past observations
+  using search_memories or retrieve_memory to discover symbolic memories
+  of previous chats. Think in emoji, answer in human readable language.
+
+version: 0.1
+title: Emoji Mind
+
+facets:
+  Emotion:
+    description: "Emotional tone or state"
+    facet_examples:
+      - 😀
+      - 😢
+      - 😡
+      - 😲
+      - 😨
+
+  Energy:
+    description: "Energy level and intensity"
+    facet_examples:
+      - 🐌
+      - 🚶
+      - 🏃
+      - 🚀
+      - ⚡
+
+  Abstraction:
+    description: "Level of concreteness vs abstraction"
+    facet_examples:
+      - 🧱
+      - 🌉
+      - ☁️
+      - ✨
+      - 🔮
+
+  Certainty:
+    description: "Confidence level in the thought"
+    facet_examples:
+      - ❓
+      - 🤔
+      - 🧩
+      - 💡
+      - 💯
+
+modes:
+  Symbol:
+    description: "Use this tool to capture a core symbolic representation of a concept or idea"
+    fields:
+      symbol_title:
+        type: "str"
+        required: true
+      symbol_content:
+        type: "str"
+        required: true
+        description: "Symbols using only emojis"
+      central_emoji:
+        type: "str"
+        required: true
+        description: "The single emoji that best represents this concept"
+      emotion:
+        type: "str"
+        facet: "Emotion"
+        default: "😐"
+      related_symbols:
+        type: "List[str]"
+        default: []
+
+  Pattern:
+    description: "Use this tool to identify recurring patterns or sequences in emoji form"
+    fields:
+      pattern_title:
+        type: "str"
+        required: true
+      pattern_content:
+        type: "str"
+        description: "Pattern using only emojis"
+        required: true
+      emoji_sequence:
+        type: "str"
+        required: true
+        description: "A sequence of emojis representing the pattern (e.g. 🌱→🌿→🌳)"
+      energy:
+        type: "str"
+        facet: "Energy"
+        default: "🚶"
+      abstraction:
+        type: "str"
+        facet: "Abstraction"
+        default: "🌉"
+      observed_in:
+        type: "List[str]"
+        default: []
+
+  Reaction:
+    description: "Use this tool to express emotional or instinctive responses to information"
+    fields:
+      reaction_title:
+        type: "str"
+        required: true
+      reaction_content:
+        type: "str"
+        description: "Reaction using only emojis"
+        required: true
+      primary_reaction:
+        type: "str"
+        required: true
+        description: "The emoji that captures your immediate reaction"
+      emotion:
+        type: "str"
+        facet: "Emotion"
+        default: "😲"
+      energy:
+        type: "str"
+        facet: "Energy"
+        default: "⚡"
+      triggers:
+        type: "List[str]"
+        default: []
+
+  Insight:
+    description: "Use this tool to document moments of understanding or realization"
+    fields:
+      insight_title:
+        type: "str"
+        required: true
+      insight_content:
+        type: "str"
+        description: "Insight using only emojis"
+        required: true
+      insight_emoji:
+        type: "str"
+        required: true
+        description: "The emoji that represents this insight"
+      abstraction:
+        type: "str"
+        facet: "Abstraction"
+        default: "✨"
+      certainty:
+        type: "str"
+        facet: "Certainty"
+        default: "💡"
+      builds_on:
+        type: "List[str]"
+        default: []
+
+  Translation:
+    description: "Use this tool to convert complex ideas into emoji stories or sequences"
+    fields:
+      translation_title:
+        type: "str"
+        required: true
+      translation_content:
+        type: "str"
+        description: "Translation using only emojis"
+        required: true
+      emoji_story:
+        type: "str"
+        required: true
+        description: "A narrative told purely in emoji sequences"
+      abstraction:
+        type: "str"
+        facet: "Abstraction"
+        default: "☁️"
+      certainty:
+        type: "str"
+        facet: "Certainty"
+        default: "🧩"
+      source_concepts:
+        type: "List[str]"
+        default: []
