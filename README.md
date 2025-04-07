@@ -125,9 +125,11 @@ FEGIS tools are made available to the model at runtime, but they are **not used 
 To encourage a model to use the cognitive tools, you need to prime it with appropriate instructions. For example:
 
 ```
-Throughout our conversation, use your tools naturally and fluidly. 
-Feel free to reflect, introspect, or use memory to recall past insights as needed. 
-You can search past thoughts using `search_memories`, or revisit specific artifacts with `retrieve_memory`.
+  Throughout our conversation, use your tools naturally and fluidly. 
+  Feel free to reflect, introspect, stay aware, have an innermonologue
+  or use memory to recall past insights as needed. You can search past
+  thoughts using `search_memories`, or revisit specific artifacts with
+  `retrieve_memory`.
 ```
 
 ### Memory Usage
