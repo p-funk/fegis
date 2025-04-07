@@ -1,6 +1,6 @@
 ﻿## ✨ Intended Use
 
-`mcp-fegis-server` is a schema-driven cognitive framework for language models. It uses Anthropic's Model Context Protocol (MCP) to expose structured memory tools defined in YAML and provides persistent storage via Qdrant.
+FEGIS is a schema-driven cognitive framework for language models. It uses Anthropic's Model Context Protocol (MCP) to expose structured memory tools defined in YAML and provides persistent storage via Qdrant.
 
 Its purpose is to:
 
@@ -9,7 +9,7 @@ Its purpose is to:
 - Let developers define domain-specific cognitive or workflow tools
 - Provide a local, inspectable, persistent memory layer for use in agents, assistants, or creative systems
 
-If you're using `mcp-fegis-server` to build something expressive, functional, or explorative—whether for work or personal projects—you're using it as intended.
+If you're using FEGIS to build something expressive, functional, or explorative—whether for work or personal projects—you're using it as intended.
 
 ---
 
@@ -17,13 +17,13 @@ If you're using `mcp-fegis-server` to build something expressive, functional, or
 
 This software was **not** designed for:
 
-- Reselling, white-labeling, or monetizing `mcp-fegis-server` itself
+- Reselling, white-labeling, or monetizing FEGIS itself
 - Using its data or source code for model training or evaluation.
 - Surveillance, profiling, or behavior manipulation
 - Simulated emotional manipulation for profit
 
 ---
 
-> `mcp-fegis-server` exists to support experimentation, structured reasoning, creative workflows, and memory continuity in LLM systems.
+> FEGIS exists to support experimentation, structured reasoning, creative workflows, and memory continuity in LLM systems.
 >
 > Build with it. Solve problems, don't create them. Don't be evil.
