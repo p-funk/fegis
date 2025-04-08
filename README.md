@@ -8,7 +8,7 @@ FEGIS is not a cognitive system — it's the foundation for building your own.
 
 - **Schema-Defined Cognition**: Define custom cognitive modes in YAML with structured fields and metadata
 - **Persistent Memory**: Store cognitive artifacts with full provenance (mode, UUID, timestamp, metadata)
-- **Semantic Retrieval**: Search for previous thoughts by content similarity or direct UUID lookup
+- **Semantic Retrieval**: Search for previous cognitive artifacts by content similarity or direct UUID lookup
 - **Vectorized Storage**: Utilize embeddings for efficient semantic search across artifacts
 - **Model-Agnostic Format**: Your cognitive artifacts persist across different models and sessions
 
@@ -17,7 +17,7 @@ FEGIS is not a cognitive system — it's the foundation for building your own.
 - Create agents whose thinking can reference, reflect on, and build upon prior cognitive artifacts
 - Own and host your memory — everything is local, inspectable, and portable
 - Build a personal **Cognitive Archive** — a persistent, structured body of thought that can be searched, retrieved, and extended across time
-
+- Building modes of cognition in a layered way that enables emergent tool choice
 ## Architecture
 
 FEGIS consists of several key components:
