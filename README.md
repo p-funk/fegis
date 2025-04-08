@@ -7,30 +7,23 @@ FEGIS is not a cognitive system — it's the foundation for building your own.
 ## Key Capabilities
 
 - **Schema-Defined Cognition**: Define custom cognitive modes in YAML with structured fields and metadata
-- **Persistent Memory**: Store cognitive artifacts with full provenance (mode, UUID, timestamp, metadata) providing breadcrumbs to traverse cognitive history
+- **Persistent Memory**: Store cognitive artifacts with full provenance (mode, UUID, timestamp, metadata)
 - **Semantic Retrieval**: Search for previous thoughts by content similarity or direct UUID lookup
-- **Vectorized Storage**: Utilize embeddings for efficient semantic search across cognitive artifacts
+- **Vectorized Storage**: Utilize embeddings for efficient semantic search across artifacts
 - **Model-Agnostic Format**: Your cognitive artifacts persist across different models and sessions
 
-## What FEGIS Is
+## What FEGIS Enables
 
-**FEGIS is:**
-
-- A runtime system for defining and executing schema-based thinking tools
-- A way to store structured cognitive artifacts with semantic and relational metadata
-- A vectorized memory system with built-in retrieval and recall
-- A way to create agents whose thinking can reference, reflect on, and build upon prior cognitive artifacts
-- A system where you own and host your memory — everything is local, inspectable, and portable
-- A model-agnostic format — your memory persists across different models and future releases
-
-Over time, FEGIS helps build a personal **Cognitive Archive** — a persistent, structured body of thought that can be searched, retrieved, extended, and carried forward across models, sessions, and time.
+- Create agents whose thinking can reference, reflect on, and build upon prior cognitive artifacts
+- Own and host your memory — everything is local, inspectable, and portable
+- Build a personal **Cognitive Archive** — a persistent, structured body of thought that can be searched, retrieved, and extended across time
 
 ## Architecture
 
 FEGIS consists of several key components:
 
 1. **Archetype Definitions**: YAML files that define cognitive modes and their structure
-2. **FastMCP Server**: Exposes cognitive tools to compatible LLM clients
+2. **Model Context Protocol Server**: Exposes cognitive tools to compatible LLM clients
 3. **Qdrant Vector Database**: Stores and indexes cognitive artifacts for semantic retrieval
 4. **Dynamic Tool Registration**: Creates MCP tools from archetype definitions at runtime
 
