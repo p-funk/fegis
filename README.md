@@ -122,7 +122,7 @@ FEGIS tools are made available to the model at runtime, but they are **not used 
 
 ### Tool Priming
 
-To encourage a model to use the cognitive tools, you need to prime it with appropriate instructions. For example:
+To encourage a model to use the cognitive tools, you must first prime it with appropriate instructions. For example:
 
 ```
   Throughout our conversation, use your tools naturally and fluidly. 
@@ -131,6 +131,8 @@ To encourage a model to use the cognitive tools, you need to prime it with appro
   thoughts using `search_memories`, or revisit specific artifacts with
   `retrieve_memory`.
 ```
+
+Each archetype file included in the repo has it's own Priming Prompt that will get you started.
 
 ### Memory Usage
 
