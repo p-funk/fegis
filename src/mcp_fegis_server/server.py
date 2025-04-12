@@ -3,7 +3,7 @@
 FEGIS
 
 FastMCP server providing language models with
-structured memory tools and persistent storage.
+structured cognitive tools and persistent memory.
 """
 
 import sys
@@ -72,8 +72,8 @@ async def server_lifespan(server: Server) -> AsyncIterator[dict]:
 mcp = FastMCP("FEGIS", lifespan=server_lifespan)
 
 
-def register_memory_tools():
-    """Registers tools to log structured memory entries."""
+def register_cognitive_tools():
+    """Registers tools to implement structured cognitive modes."""
 
     def create_tool_handler(mode_name: str, model_type: Type[BaseModel]):
         async def handler(ctx: Context, input_data: model_type):
@@ -94,7 +94,7 @@ def register_memory_tools():
 
 
 def register_query_tools():
-    """Registers tools for searching and retrieving stored memory."""
+    """Registers tools for searching and retrieving stored cognitive artifacts."""
 
     class SearchInput(BaseModel):
         query: str
@@ -210,7 +210,7 @@ def register_query_tools():
 
 
 def register_all_tools():
-    register_memory_tools()
+    register_cognitive_tools()
     register_query_tools()
     print("All FEGIS tools registered", file=sys.stderr)
 

@@ -104,7 +104,7 @@ class ArchetypeModelGenerator:
 
 
 class ArchetypeMemoryMapper:
-    """Maps between archetypal data and the Fegis-compatible storage format."""
+    """Maps between archetypal data and the Fegis-compatible artifact format."""
 
     @staticmethod
     def to_storage_format(schema: ArchetypeDefinition, mode_name: str, data: dict) -> Tuple[str, dict]:
