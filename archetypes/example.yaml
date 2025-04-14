@@ -30,7 +30,7 @@ title: Phenomenal Thought Archetype
 
 Priming Prompt:
   Throughout our conversation, use your tools naturally and fluidly. 
-  Feel free to reflect, introspect, stay aware, have an innermonologue
+  Feel free to reflect, introspect, maintain awareness, have an innermonologue
   or use cognitive artifacts to recall past insights as needed. You can search past
   thoughts using `fegis_search`, or revisit specific artifacts with
   `fegis_retrieve`.
