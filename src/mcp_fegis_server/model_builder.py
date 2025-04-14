@@ -73,7 +73,6 @@ class ArchetypeModelGenerator:
         for field_name, field_schema in field_schemas.items():
             field_type = cls.TYPE_MAP.get(field_schema.get("type", "str"), Any)
 
-            # Improved default/required handling
             if field_schema.get("required", False):
                 default = ...
             else:
@@ -103,7 +102,7 @@ class ArchetypeModelGenerator:
         return create_model(f"{mode_name}Input", **field_definitions)
 
 
-class ArchetypeMemoryMapper:
+class ArtifactFieldMapper:
     """Maps between archetypal data and the Fegis-compatible artifact format."""
 
     @staticmethod
@@ -132,7 +131,7 @@ class ArchetypeMemoryMapper:
 
             if "facet" in field_schema:
                 metadata["facets"][field_name] = value
-            elif field_schema.get("type") == "List[str]" or field_name == "watching":
+            elif field_schema.get("type") == "List[str]":
                 metadata["relata"][field_name] = value
             elif field_name.endswith("_title"):
                 metadata["title"] = value

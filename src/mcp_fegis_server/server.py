@@ -3,7 +3,7 @@
 FEGIS
 
 FastMCP server providing language models with
-structured cognitive tools and persistent memory.
+structured cognitive tools and persistent cognitive artifacts.
 """
 
 import sys
@@ -15,14 +15,16 @@ from mcp.server.fastmcp import FastMCP, Context
 from pydantic import BaseModel, Field
 from qdrant_client.http.models import Filter, FieldCondition, MatchValue
 
-from mcp_fegis_server.model_builder import ArchetypeDefinition, ArchetypeModelGenerator, ArchetypeMemoryMapper
+from mcp_fegis_server.model_builder import ArchetypeDefinition, ArchetypeModelGenerator, ArtifactFieldMapper
 from mcp_fegis_server.qdrant import QdrantConnector
 from mcp_fegis_server.settings import ConfigSettings, QdrantSettings
 
-# Load settings and initialize archetype definition
+# Load config and schema
 config_settings = ConfigSettings()
 archetype_definition = ArchetypeDefinition(config_settings.config_path)
 
+# Instantiate the MCP server
+mcp = FastMCP("FEGIS")
 
 @asynccontextmanager
 async def server_lifespan(server: Server) -> AsyncIterator[dict]:
@@ -31,18 +33,14 @@ async def server_lifespan(server: Server) -> AsyncIterator[dict]:
         qdrant_config = QdrantSettings()
         qdrant_connector = QdrantConnector(
             qdrant_url=qdrant_config.qdrant_url,
-            grpc_port=qdrant_config.grpc_port,
-            prefer_grpc=qdrant_config.prefer_grpc,
             qdrant_api_key=qdrant_config.qdrant_api_key,
             collection_name=qdrant_config.collection_name,
             fastembed_model=qdrant_config.fast_embed_model,
         )
         await qdrant_connector.ensure_collection_exists()
-        print("Server started successfully", file=sys.stderr)
 
         async def process_mode(ctx: Context, mode_name: str, data: Dict[str, Any]) -> Dict[str, Any]:
-            """Maps and stores an archetypal memory in Qdrant."""
-            content, metadata = ArchetypeMemoryMapper.to_storage_format(
+            content, metadata = ArtifactFieldMapper.to_storage_format(
                 ctx.request_context.lifespan_context["archetype_definition"],
                 mode_name,
                 data
@@ -68,19 +66,12 @@ async def server_lifespan(server: Server) -> AsyncIterator[dict]:
         print("Server shutting down", file=sys.stderr)
 
 
-# Instantiate the MCP server
-mcp = FastMCP("FEGIS", lifespan=server_lifespan)
-
-
 def register_cognitive_tools():
-    """Registers tools to implement structured cognitive modes."""
-
     def create_tool_handler(mode_name: str, model_type: Type[BaseModel]):
         async def handler(ctx: Context, input_data: model_type):
             return await ctx.request_context.lifespan_context["process_mode"](
                 ctx, mode_name, input_data.model_dump()
             )
-
         handler.__name__ = f"{mode_name.lower()}_handler"
         return handler
 
@@ -94,8 +85,6 @@ def register_cognitive_tools():
 
 
 def register_query_tools():
-    """Registers tools for searching and retrieving stored cognitive artifacts."""
-
     class SearchInput(BaseModel):
         query: str
         mode: Optional[str] = None
@@ -103,42 +92,11 @@ def register_query_tools():
         relata_filter: Optional[Dict[str, str]] = None
         limit: int = Field(5, description="Max results")
 
-    def generate_search_tool_description(schema: ArchetypeDefinition) -> str:
-        modes = schema.get_mode_names()
-        facets = {}
-        for mode in modes:
-            mode_def = schema.get_mode_schema(mode)
-            for field_name, field_schema in mode_def.get("Fields", {}).items():
-                facet_name = field_schema.get("Facet")
-                if facet_name and facet_name not in facets:
-                    facets[facet_name] = schema.get_facet_schema(facet_name)
-
-        relata_fields = set()
-        for mode in modes:
-            mode_def = schema.get_mode_schema(mode)
-            for field_name, field_schema in mode_def.get("Fields", {}).items():
-                if field_schema.get("Type") == "List[str]" or field_name == "watching":
-                    relata_fields.add(field_name)
-
-        return """
-        Search memory entries by content, structure, or relationships.
-
-        Key patterns:
-        - Content: Semantic similarity to query text
-        - Modes: {modes}
-        - Facets: {facets} as metadata qualities
-        - Relata: {relata} as relationship data
-        """.format(
-            modes=", ".join(modes),
-            facets=", ".join(facets.keys()),
-            relata=", ".join(relata_fields)
-        )
-
     @mcp.tool(
-        name="search_memories",
-        description=generate_search_tool_description(archetype_definition)
+        name="search_artifacts",
+        description="Search cognitive artifacts by content, structure, or relationships."
     )
-    async def search_memories(ctx: Context, input_data: SearchInput):
+    async def search_artifacts(ctx: Context, input_data: SearchInput):
         schema = ctx.request_context.lifespan_context["archetype_definition"]
         qdrant = ctx.request_context.lifespan_context["qdrant_connector"]
 
@@ -177,12 +135,11 @@ def register_query_tools():
         memory_id: str
 
     @mcp.tool(
-        name="retrieve_memory",
-        description="Retrieve a specific memory entry by its memory ID"
+        name="retrieve_artifact",
+        description="Retrieve a specific cognitive artifact by its memory ID"
     )
-    async def retrieve_memory(ctx: Context, input_data: RetrieveInput):
+    async def retrieve_artifact(ctx: Context, input_data: RetrieveInput):
         qdrant_connector = ctx.request_context.lifespan_context["qdrant_connector"]
-
         filter_obj = Filter(
             must=[FieldCondition(
                 key="provenance.memory_id",
@@ -198,11 +155,11 @@ def register_query_tools():
         )
 
         if not results:
-            return {"error": f"No memory found with memory ID: {input_data.memory_id}"}
+            return {"error": f"No cognitive artifact found with memory ID: {input_data.memory_id}"}
 
         result = results[0]
         return {
-            "memory": {
+            "artifact": {
                 "content": result.document,
                 "metadata": result.metadata
             }
@@ -214,5 +171,6 @@ def register_all_tools():
     register_query_tools()
     print("All FEGIS tools registered", file=sys.stderr)
 
-
+# Attach lifespan and register tools
+mcp.lifespan = server_lifespan
 register_all_tools()

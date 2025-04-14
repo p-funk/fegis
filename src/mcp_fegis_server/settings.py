@@ -1,9 +1,9 @@
 ﻿"""
-Settings module for Fegis.
+Settings module for FEGIS.
 
 Provides Pydantic settings classes for configuration of:
 1. Qdrant vector database connection
-2. Schema configuration file location
+2. Archetype configuration file location
 """
 
 from typing import Optional
@@ -26,16 +26,6 @@ class QdrantSettings(BaseSettings):
     qdrant_url: str = Field(
         validation_alias="QDRANT_URL",
     )
-    grpc_port: int = Field(
-        default=6334,
-        validation_alias="QDRANT_GRPC_PORT",
-        description="gRPC port for the Qdrant server (typically 6334)"
-    )
-    prefer_grpc: bool = Field(
-        default=True,
-        validation_alias="QDRANT_PREFER_GRPC",
-        description="Whether to prefer gRPC over HTTP when possible"
-    )
     qdrant_api_key: Optional[str] = Field(
         default=None,
         validation_alias="QDRANT_API_KEY",
@@ -43,7 +33,7 @@ class QdrantSettings(BaseSettings):
     )
     collection_name: str = Field(
         validation_alias="COLLECTION_NAME",
-        description="Name of the Qdrant collection to store memories"
+        description="Name of the Qdrant collection to store cognitive artifacts"
     )
     fast_embed_model: str = Field(
         validation_alias="FAST_EMBED_MODEL",
@@ -53,13 +43,13 @@ class QdrantSettings(BaseSettings):
 
 class ConfigSettings(BaseSettings):
     """
-    Schema configuration settings.
+    Archetype configuration settings.
 
     These settings are loaded from environment variables:
-    - CONFIG_PATH: Path to the YAML configuration file
+    - CONFIG_PATH: Path to the YAML archetype definition file
     """
     config_path: str = Field(
         default="config.yaml",
         validation_alias="CONFIG_PATH",
-        description="Path to the YAML file containing the structured schema definition"
+        description="Path to the YAML file containing the archetype definition"
     )

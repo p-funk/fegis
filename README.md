@@ -1,23 +1,26 @@
 # FEGIS
 
-FEGIS is a runtime framework for structured cognition and persistent memory in language models built with Anthropic's Model Context Protocol. It allows schema-defined cognitive modes to be dynamically registered, invoked, and stored as structured memory using vector embeddings and semantic context. Think: programmable thinking tools with recallable memory.
+FEGIS is a runtime framework for structured cognition and persistent cognitive artifacts in language models built with Anthropic's Model Context Protocol. It allows schema-defined cognitive modes to be dynamically registered, invoked, and stored as structured cognitive artifacts using vector embeddings and semantic context. Think: programmable thinking tools with recallable cognitive artifacts.
 
 FEGIS is not a cognitive system — it's the foundation for building your own.
+
+In FEGIS, cognition refers to the structured use of dynamic tools (called modes) to capture, evaluate, and relate thoughts. These tools are defined in archetypes and allow the model to engage in different types of cognitive activity such as reflection, awareness, and analysis. Rather than simulating cognition through unstructured prompting, FEGIS enables schema-driven cognition where every thought becomes a searchable, persistent, and context-rich artifact.
 
 ## Key Capabilities
 
 - **Schema-Defined Cognition**: Define custom cognitive modes in YAML with structured fields and metadata
-- **Persistent Memory**: Store cognitive artifacts with full provenance (mode, UUID, timestamp, metadata)
+- **Persistent Cognitive Artifacts**: Store cognitive artifacts with full provenance (mode, UUID, timestamp, metadata)
 - **Semantic Retrieval**: Search for previous cognitive artifacts by content similarity or direct UUID lookup
 - **Vectorized Storage**: Utilize embeddings for efficient semantic search across artifacts
 - **Model-Agnostic Format**: Your cognitive artifacts persist across different models and sessions
 
 ## What FEGIS Enables
 
-- Create agents whose thinking can reference, reflect on, and build upon prior cognitive artifacts
-- Own and host your memory — everything is local, inspectable, and portable
-- Build a personal **Cognitive Archive** — a persistent, structured body of thought that can be searched, retrieved, and extended across time
-- Building modes of cognition in a layered way that enables emergent tool choice
+- Develop agents that reference, reflect on, and build upon prior cognitive artifacts
+- Own a fully local, portable, and inspectable Cognitive Archive
+- Maintain a persistent, structured body of thought that can be searched, retrieved, and extended over time
+- Layer modes of cognition to support emergent tool use
+
 ## Architecture
 
 FEGIS consists of several key components:
@@ -115,21 +118,21 @@ FEGIS tools are made available to the model at runtime, but they are **not used 
 
 ### Tool Priming
 
-To encourage a model to use the cognitive tools, you must first prime it with appropriate instructions. For example:
+To encourage a model to use the cognitive tools, you must first prime it with appropriate instructions. For example.yaml:
 
 ```
   Throughout our conversation, use your tools naturally and fluidly. 
   Feel free to reflect, introspect, stay aware, have an innermonologue
-  or use memory to recall past insights as needed. You can search past
-  thoughts using `search_memories`, or revisit specific artifacts with
-  `retrieve_memory`.
+  or use cognitive artifacts to recall past insights as needed. You can search past
+  thoughts using `search_artifacts`, or revisit specific artifacts with
+  `retrieve_artifact`.
 ```
 
 Each archetype file included in the repo has it's own Priming Prompt that will get you started.
 
-### Memory Usage
+### Cognitive Artifact Usage
 
-The memory system allows for:
+The cognitive artifact system allows for:
 
 - **Semantic Search**: Find cognitive artifacts based on content similarity
 - **Direct Retrieval**: Look up specific artifacts by their UUID

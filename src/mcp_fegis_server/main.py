@@ -1,7 +1,7 @@
 ﻿"""
-Fegis Server main entry point.
+FEGIS Server main entry point.
 
-This module serves as the entry point for running the Fegis memory server.
+This module serves as the entry point for running the FEGIS cognitive artifacts server.
 """
 
 import argparse
@@ -9,15 +9,16 @@ import argparse
 
 def main():
     """
-    Main entry point for Fegis.
+    Main entry point for FEGIS.
 
-    Parses command-line arguments and starts the Fegis server with the
+    Parses command-line arguments and starts the FEGIS server with the
     appropriate transport.
     """
     # Parse command-line arguments
     parser = argparse.ArgumentParser(
-        description="Fegis: A schema-driven memory engine that gives LLMs structured tools and persistent memory"
+        description="FEGIS: A schema-driven cognitive framework that gives LLMs structured tools and persistent cognitive artifacts"
     )
+
     parser.add_argument(
         "--transport",
         choices=["stdio", "sse"],

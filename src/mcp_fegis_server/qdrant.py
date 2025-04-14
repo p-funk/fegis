@@ -1,8 +1,8 @@
 ﻿"""
-Qdrant connector module for Fegis.
+Qdrant connector module for FEGIS.
 
 Provides a client for interacting with the Qdrant vector database
-to store and retrieve structured memory entries.
+to store and retrieve structured cognitive artifacts.
 """
 
 from typing import Optional
@@ -15,7 +15,7 @@ class QdrantConnector:
     Connector for Qdrant vector database operations.
 
     Handles vector embeddings, search, and CRUD operations for
-    structured memory entries.
+    structured cognitive artifacts.
     """
 
     def __init__(
@@ -29,8 +29,6 @@ class QdrantConnector:
     ):
         """Initialize the Qdrant connector with connection details."""
         self._qdrant_url = qdrant_url
-        self._grpc_port = grpc_port
-        self._prefer_grpc = prefer_grpc
         self._qdrant_api_key = qdrant_api_key
         self._collection_name = collection_name
         self._fastembed_model = fastembed_model
@@ -38,8 +36,6 @@ class QdrantConnector:
         # Create the client
         self.client = AsyncQdrantClient(
             url=self._qdrant_url,
-            grpc_port=self._grpc_port,
-            prefer_grpc=self._prefer_grpc,
             api_key=self._qdrant_api_key,
         )
 
