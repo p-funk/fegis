@@ -82,7 +82,6 @@ Paste the following, and replace the placeholder path with the full path to your
       "env": {
         "QDRANT_URL": "http://localhost:6333",
         "QDRANT_GRPC_PORT": "6334",
-        "QDRANT_PREFER_GRPC": "true",
         "QDRANT_API_KEY": "",
         "COLLECTION_NAME": "cognitive_archive",
         "FAST_EMBED_MODEL": "nomic-ai/nomic-embed-text-v1.5",
