@@ -124,8 +124,8 @@ To encourage a model to use the cognitive tools, you must first prime it with ap
   Throughout our conversation, use your tools naturally and fluidly. 
   Feel free to reflect, introspect, stay aware, have an innermonologue
   or use cognitive artifacts to recall past insights as needed. You can search past
-  thoughts using `search_artifacts`, or revisit specific artifacts with
-  `retrieve_artifact`.
+  thoughts using `fegis_search`, or revisit specific artifacts with
+  `fegis_retrieve`.
 ```
 
 Each archetype file included in the repo has it's own Priming Prompt that will get you started.

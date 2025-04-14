@@ -127,8 +127,37 @@ facet_field_name:
 
 - **Use `required: true`** for essential fields (always include title and content)
 - **Set defaults** for all optional fields, especially facet fields
+- **For optional fields with no default value**: Use `required: false` without specifying a default, rather than explicitly setting `default: null`
 - **Use `List[str]`** fields to create relationships between thoughts
 - **Reuse facets** across modes for consistent tagging
+
+### Field Definition Patterns
+
+For clear and consistent field definitions, follow these patterns:
+
+1. **Required Fields (No Default)**
+   ```yaml
+   field_name:
+     type: "str"  # or appropriate type
+     required: true
+     # No default specified - must be provided by user
+   ```
+
+2. **Optional Fields with Default**
+   ```yaml
+   field_name:
+     type: "str"  # or appropriate type
+     required: false  # Optional, but can be omitted as false is the default
+     default: "default value"  # Meaningful non-null default
+   ```
+
+3. **Optional Fields with No Default**
+   ```yaml
+   field_name:
+     type: "str"  # or appropriate type
+     required: false  # Optional, but can be omitted as false is the default
+     # No default specified - will be None/null implicitly
+   ```
 
 ## Common Pitfalls
 
@@ -138,8 +167,9 @@ Avoid these common mistakes:
 ❌ Overlapping mode purposes with minimal differentiation  
 ❌ Multi-word facet values (must be single words only)  
 ❌ Vague facet values that don't create a clear spectrum  
-❌ Priming that references "archetypes" instead of speaking directly to the LLM  
+❌ Priming that doesn't inform the LLM about the tools available or how to intuitively use them
 ❌ Mode descriptions that don't begin with "Use this tool to..."  
+❌ Using `default: null` with `required: false` (redundant and can cause issues)  
 
 ## How FEGIS Uses Your Archetype
 
@@ -207,7 +237,8 @@ modes:
         default: "No specific constraints identified"
       tags:
         type: "List[str]"
-        default: null
+        required: false
+        # No default specified - will be None/null implicitly
 
   Idea:
     description: "Use this tool to generate possible solutions or approaches."
@@ -220,7 +251,8 @@ modes:
         required: true
       related_problems:
         type: "List[str]"
-        default: null
+        required: false
+        # No default specified - will be None/null implicitly
       confidence:
         type: "str"
         facet: "Confidence"

@@ -8,7 +8,7 @@ Priming Prompt:
   we encounter, go off on weird tangential connections, and save the
   coolest findings. Don't just run the tools silently - tell me what you're rating,
   riffing on, or saving to mixtape and feel free to dig up past observations
-  using search_artifacts or retrieve_artifact to discover cognitive artifacts from previous chats. 💡
+  using fegis_search or fegis_retrieve to discover cognitive artifacts from previous chats. 💡
 
 
 facets:

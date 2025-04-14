@@ -1,0 +1,251 @@
+version: 1.0
+title: Test FEGIS Archetype
+
+Priming Prompt:
+  You have been provided structured tools for testing the FEGIS system components.
+  Use the testcase tool to define individual tests, testsuite to group related tests,
+  testresult to record outcomes, testfixture for setup/teardown, and testassertion
+  for specific assertions. These tools help organize test artifacts and metadata
+  in a way that can be effectively stored, retrieved, and analyzed.
+  You can search past test artifacts using `fegis_search`, or retrieve specific
+  test artifacts by their memory ID using `fegis_retrieve`. These tools provide
+  access to the persistent memory of the system.  Please runt these tools now and validate
+  their functionality
+
+facets:
+  TestStatus:
+    description: "Current status of the test"
+    facet_examples:
+      - pending
+      - running
+      - passed
+      - failed
+      - skipped
+      - blocked
+
+  TestPriority:
+    description: "Importance level of the test"
+    facet_examples:
+      - low
+      - medium
+      - high
+      - critical
+
+  TestComplexity:
+    description: "Level of complexity in the test"
+    facet_examples:
+      - simple
+      - moderate
+      - complex
+      - intricate
+
+  Coverage:
+    description: "Type of test coverage provided"
+    facet_examples:
+      - unit
+      - integration
+      - system
+      - performance
+      - security
+
+  Reliability:
+    description: "Consistency of test results"
+    facet_examples:
+      - flaky
+      - inconsistent
+      - stable
+      - robust
+
+modes:
+  TestCase:
+    description: "Use this tool to define individual test cases with clear objectives and metadata."
+    fields:
+      test_title:
+        type: "str"
+        required: true
+      
+      test_content:
+        type: "str"
+        required: true
+      
+      status:
+        type: "str"
+        facet: "TestStatus"
+        default: "pending"
+      
+      priority:
+        type: "str"
+        facet: "TestPriority"
+        default: "medium"
+      
+      complexity:
+        type: "str"
+        facet: "TestComplexity"
+        default: "moderate"
+      
+      coverage:
+        type: "str"
+        facet: "Coverage"
+        default: "unit"
+      
+      reliability:
+        type: "str"
+        facet: "Reliability"
+        default: "stable"
+      
+      dependencies:
+        type: "List[str]"
+        required: false
+        # No default specified - will be None/null implicitly
+      
+      tags:
+        type: "List[str]"
+        required: false
+        # No default specified - will be None/null implicitly
+
+  TestSuite:
+    description: "Use this tool to group related test cases into a cohesive suite."
+    fields:
+      suite_title:
+        type: "str"
+        required: true
+      
+      suite_content:
+        type: "str"
+        required: true
+      
+      test_cases:
+        type: "List[str]"
+        required: true
+      
+      coverage:
+        type: "str"
+        facet: "Coverage"
+        default: "integration"
+      
+      priority:
+        type: "str"
+        facet: "TestPriority"
+        default: "medium"
+      
+      prerequisites:
+        type: "str"
+        required: false
+        default: "No specific prerequisites required"
+      
+      tags:
+        type: "List[str]"
+        required: false
+        # No default specified - will be None/null implicitly
+
+  TestResult:
+    description: "Use this tool to record the outcomes of test executions."
+    fields:
+      result_title:
+        type: "str"
+        required: true
+      
+      result_content:
+        type: "str"
+        required: true
+      
+      test_reference:
+        type: "str"
+        required: true
+      
+      status:
+        type: "str"
+        facet: "TestStatus"
+        required: true
+      
+      execution_time:
+        type: "str"
+        required: false
+        default: "Not measured"
+      
+      error_message:
+        type: "str"
+        required: false
+        # No default specified - will be None/null implicitly
+
+      artifacts:
+        type: "List[str]"
+        required: false
+        # No default specified - will be None/null implicitly
+      
+      notes:
+        type: "str"
+        required: false
+        # No default specified - will be None/null implicitly
+
+  TestFixture:
+    description: "Use this tool to define test setup and teardown procedures."
+    fields:
+      fixture_title:
+        type: "str"
+        required: true
+      
+      fixture_content:
+        type: "str"
+        required: true
+      
+      setup:
+        type: "str"
+        required: true
+      
+      teardown:
+        type: "str"
+        required: true
+      
+      dependencies:
+        type: "List[str]"
+        required: false
+        # No default specified - will be None/null implicitly
+      
+      scope:
+        type: "str"
+        required: false
+        default: "function"
+      
+      complexity:
+        type: "str"
+        facet: "TestComplexity"
+        default: "moderate"
+
+  TestAssertion:
+    description: "Use this tool to define specific test assertions and expectations."
+    fields:
+      assertion_title:
+        type: "str"
+        required: true
+      
+      assertion_content:
+        type: "str"
+        required: true
+      
+      expected:
+        type: "str"
+        required: true
+      
+      actual:
+        type: "str"
+        required: true
+      
+      assertion_type:
+        type: "str"
+        required: true
+      
+      priority:
+        type: "str"
+        facet: "TestPriority"
+        default: "medium"
+      
+      notes:
+        type: "str"
+        required: false
+        # No default specified - will be None/null implicitly
+      
+      related_tests:
+        type: "List[str]"
+        required: false
+        # No default specified - will be None/null implicitly

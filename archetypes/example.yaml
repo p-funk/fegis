@@ -32,8 +32,8 @@ Priming Prompt:
   Throughout our conversation, use your tools naturally and fluidly. 
   Feel free to reflect, introspect, stay aware, have an innermonologue
   or use cognitive artifacts to recall past insights as needed. You can search past
-  thoughts using `search_artifacts`, or revisit specific artifacts with
-  `retrieve_artifact`.
+  thoughts using `fegis_search`, or revisit specific artifacts with
+  `fegis_retrieve`.
 
 # ========================================================================
 # FACETS SECTION
@@ -328,17 +328,20 @@ modes:
       abstraction_level:
         type: "str"
         facet: "AbstractionLevel"
-        default: null
+        required: false
+        # No default specified - will be None/null implicitly
 
       epistemic_status:
         type: "str"
         facet: "EpistemicStatus"
-        default: null
+        required: false
+        # No default specified - will be None/null implicitly
 
       affect:
         type: "str"
         facet: "Affect"
-        default: null
+        required: false
+        # No default specified - will be None/null implicitly
 
       # Consistent relationship field across modes
       concepts:

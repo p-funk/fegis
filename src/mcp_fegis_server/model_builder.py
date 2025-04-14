@@ -76,7 +76,12 @@ class ArchetypeModelGenerator:
             if field_schema.get("required", False):
                 default = ...
             else:
-                default = field_schema.get("default", None)
+                # Handle the case where default is explicitly set to null
+                if "default" in field_schema and field_schema["default"] is None:
+                    # Treat explicit null the same as no default
+                    default = None
+                else:
+                    default = field_schema.get("default", None)
 
             if default == "now()":
                 default = None
@@ -89,15 +94,23 @@ class ArchetypeModelGenerator:
             else:
                 description = field_schema.get("description", "")
 
-            field_metadata = {"description": description}
-
+            # Create extra schema metadata (using json_schema_extra to be compatible with Pydantic V2+)
+            extra_schema = {}
             if facet_name:
-                field_metadata["facet"] = facet_name
+                extra_schema["facet"] = facet_name
                 facet_schema = schema.get_facet_schema(facet_name)
                 if facet_schema and "facet_examples" in facet_schema:
-                    field_metadata["facet_examples"] = facet_schema["facet_examples"]
+                    extra_schema["facet_examples"] = facet_schema["facet_examples"]
 
-            field_definitions[field_name] = (field_type, Field(default, **field_metadata))
+            # Create the field with proper Pydantic V2+ structure
+            field_definitions[field_name] = (
+                field_type, 
+                Field(
+                    default,
+                    description=description,
+                    json_schema_extra=extra_schema if extra_schema else None
+                )
+            )
 
         return create_model(f"{mode_name}Input", **field_definitions)
 

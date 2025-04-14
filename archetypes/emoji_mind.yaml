@@ -1,4 +1,4 @@
-﻿# Produces a visual cognitive archive using emoji as the primary symbolic language
+﻿﻿﻿# Produces a visual cognitive archive using emoji as the primary symbolic language
 # compressing complex meaning into compact visual symbols
 # *****Experimental Archetype****
 
@@ -11,7 +11,7 @@ Priming Prompt:
   and create emoji translations of complex ideas. Build a visual 
   symbolic language of thought using emoji facets that capture emotion, energy,
   abstraction, and certainty levels. Feel free to unpack past observations
-  using search_artifacts or retrieve_artifact to discover symbolic cognitive artifacts
+  using fegis_search or fegis_retrieve to discover symbolic cognitive artifacts
   of previous chats. Think in emoji, answer in human readable language.
 
 
