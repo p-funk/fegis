@@ -1,0 +1,141 @@
+﻿version: 1.0
+title: Problem-Solving Archetype
+
+Priming Prompt:
+  You have access to a structured thinking toolkit with different cognitive tools.
+  Begin by helping me define the problem then use the problem tool to frame issues clearly, use the idea tool to
+  generate possible solutions, apply the evaluation tool to analyze options,
+  and use the solution tool to document your chosen approach. Move between
+  these tools as needed.
+
+facets:
+  Confidence:
+    description: "Level of certainty in the statement"
+    facet_examples:
+      - uncertain
+      - tentative
+      - confident
+      - certain
+
+  Complexity:
+    description: "Level of intricacy or difficulty"
+    facet_examples:
+      - simple
+      - moderate
+      - complex
+      - intricate
+
+  Priority:
+    description: "Level of importance or urgency"
+    facet_examples:
+      - low
+      - medium
+      - high
+      - critical
+
+modes:
+  Problem:
+    description: "Use this tool to frame and define the problem."
+    fields:
+      problem_title:
+        type: "str"
+        required: true
+      problem_content:
+        type: "str"
+        required: true
+      complexity:
+        type: "str"
+        facet: "Complexity"
+        default: "moderate"
+      priority:
+        type: "str"
+        facet: "Priority"
+        default: "medium"
+      constraints:
+        type: "List[str]"
+        required: false
+        default: "No specific constraints identified"
+      tags:
+        type: "List[str]"
+        default: null
+
+  Idea:
+    description: "Use this tool to generate possible solutions or approaches."
+    fields:
+      idea_title:
+        type: "str"
+        required: true
+      idea_content:
+        type: "str"
+        required: true
+      related_problems:
+        type: "List[str]"
+        default: null
+      confidence:
+        type: "str"
+        facet: "Confidence"
+        default: "tentative"
+      complexity:
+        type: "str"
+        facet: "Complexity"
+        default: "moderate"
+      pros:
+        type: "str"
+        required: false
+        default: "No specific advantages noted"
+      cons:
+        type: "str"
+        required: false
+        default: "No specific disadvantages noted"
+
+  Evaluation:
+    description: "Use this tool to analyze and compare possible solutions."
+    fields:
+      evaluation_title:
+        type: "str"
+        required: true
+      evaluation_content:
+        type: "str"
+        required: true
+      ideas_evaluated:
+        type: "List[str]"
+        required: true
+      criteria:
+        type: "str"
+        required: true
+      confidence:
+        type: "str"
+        facet: "Confidence"
+        default: "confident"
+      priority:
+        type: "str"
+        facet: "Priority"
+        default: "high"
+
+  Solution:
+    description: "Use this tool to document the chosen solution and implementation plan."
+    fields:
+      solution_title:
+        type: "str"
+        required: true
+      solution_content:
+        type: "str"
+        required: true
+      selected_idea:
+        type: "str"
+        required: true
+      implementation_steps:
+        type: "str"
+        required: true
+      confidence:
+        type: "str"
+        facet: "Confidence"
+        default: "confident"
+      complexity:
+        type: "str"
+        facet: "Complexity"
+        default: "moderate"
+      expected_outcomes:
+        type: "str"
+        required: false
+        default: "No specific outcomes projected"
