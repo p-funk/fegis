@@ -243,9 +243,7 @@ modes:
       notes:
         type: "str"
         required: false
-        # No default specified - will be None/null implicitly
-      
+
       related_tests:
         type: "List[str]"
         required: false
-        # No default specified - will be None/null implicitly
