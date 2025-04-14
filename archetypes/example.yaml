@@ -25,15 +25,15 @@
 # cognitive processes. It demonstrates effective archetype design patterns.
 # ========================================================================
 
+version: 1.0
+title: Phenomenal Thought Archetype
+
 Priming Prompt:
   Throughout our conversation, use your tools naturally and fluidly. 
   Feel free to reflect, introspect, stay aware, have an innermonologue
-  or use memory to recall past insights as needed. You can search past
-  thoughts using `search_memories`, or revisit specific artifacts with
-  `retrieve_memory`.
-
-version: 1.0
-title: Phenomenal Thought Archetype
+  or use cognitive artifacts to recall past insights as needed. You can search past
+  thoughts using `search_artifacts`, or revisit specific artifacts with
+  `retrieve_artifact`.
 
 # ========================================================================
 # FACETS SECTION
@@ -183,7 +183,7 @@ facets:
 # in the archetype.
 #
 # Design principles demonstrated:
-# 1. Each mode serves a distinct cognitive purpose
+# 1. Each mode serves a distinct purpose
 # 2. Every mode specifies a content_field.
 # 3. Each mode has a *_title field that becomes metadata.title
 # 4. Modes use facets appropriate to their function
@@ -407,11 +407,6 @@ modes:
         type: "str"
         facet: "MetaLevel"
         default: "immediate"
-
-      # Boolean field
-      watching:
-        type: "bool"
-        default: true
 
       # Foreground and background create a focus/context relationship
       foreground:
