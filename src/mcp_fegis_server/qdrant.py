@@ -21,8 +21,6 @@ class QdrantConnector:
     def __init__(
             self,
             qdrant_url: str,
-            grpc_port: int,
-            prefer_grpc: bool,
             qdrant_api_key: Optional[str],
             collection_name: str,
             fastembed_model: str,

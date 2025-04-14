@@ -106,7 +106,7 @@ modes:
       confidence:
         type: "str"
         facet: "Confidence"
-        default: "confident"
+        default: "tentative"
       priority:
         type: "str"
         facet: "Priority"
