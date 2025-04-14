@@ -2,14 +2,14 @@ version: 1.0
 title: Test FEGIS Archetype
 
 Priming Prompt:
-  You have been provided structured tools for testing the FEGIS system components.
+  You have been provided structured tools for testing your own tools.
   Use the testcase tool to define individual tests, testsuite to group related tests,
   testresult to record outcomes, testfixture for setup/teardown, and testassertion
   for specific assertions. These tools help organize test artifacts and metadata
   in a way that can be effectively stored, retrieved, and analyzed.
   You can search past test artifacts using `fegis_search`, or retrieve specific
   test artifacts by their memory ID using `fegis_retrieve`. These tools provide
-  access to the persistent memory of the system.  Please runt these tools now and validate
+  access to the persistent memory of the system. Please run these tools now and validate
   their functionality
 
 facets:
@@ -95,13 +95,11 @@ modes:
       
       dependencies:
         type: "List[str]"
-        required: false
-        # No default specified - will be None/null implicitly
-      
+        required: true
+
       tags:
         type: "List[str]"
         required: false
-        # No default specified - will be None/null implicitly
 
   TestSuite:
     description: "Use this tool to group related test cases into a cohesive suite."
@@ -136,7 +134,6 @@ modes:
       tags:
         type: "List[str]"
         required: false
-        # No default specified - will be None/null implicitly
 
   TestResult:
     description: "Use this tool to record the outcomes of test executions."
@@ -166,17 +163,14 @@ modes:
       error_message:
         type: "str"
         required: false
-        # No default specified - will be None/null implicitly
 
       artifacts:
         type: "List[str]"
         required: false
-        # No default specified - will be None/null implicitly
-      
+
       notes:
         type: "str"
         required: false
-        # No default specified - will be None/null implicitly
 
   TestFixture:
     description: "Use this tool to define test setup and teardown procedures."
@@ -199,9 +193,8 @@ modes:
       
       dependencies:
         type: "List[str]"
-        required: false
-        # No default specified - will be None/null implicitly
-      
+        required: true
+
       scope:
         type: "str"
         required: false
@@ -246,4 +239,4 @@ modes:
 
       related_tests:
         type: "List[str]"
-        required: false
+        required: true
