@@ -1,0 +1,167 @@
+﻿version: 1.0
+title: Slime Mold Network Optimization Archetype
+
+Priming Prompt:
+  You have access to cognitive tools inspired by how slime molds solve complex network optimization problems.
+  Like Physarum polycephalum, you will approach challenges through distributed exploration, strengthening efficient 
+  pathways, and pruning inefficient ones - without central planning.
+  
+  Begin with the Exploration tool to map out all possible connections in the problem space.
+  Use the Flow tool to identify where resources or attention should be concentrated.
+  Apply the Pruning tool to eliminate inefficient or redundant pathways.
+  Finalize with the Network tool to document the optimized solution.
+  
+  Move between these tools fluidly, just as a slime mold constantly readjusts its network.
+  Remember that optimal solutions often emerge from simple rules applied consistently rather than top-down design.
+
+facets:
+  FlowIntensity:
+    description: "Volume of resource flow through a pathway"
+    facet_examples:
+      - minimal
+      - moderate
+      - significant
+      - maximal
+
+  Efficiency:
+    description: "Resource cost vs. benefit ratio"
+    facet_examples:
+      - wasteful
+      - functional
+      - optimized
+      - ideal
+
+  Resilience:
+    description: "Ability to maintain function if parts are damaged"
+    facet_examples:
+      - fragile
+      - vulnerable
+      - robust
+      - antifragile
+
+  Adaptability:
+    description: "Speed of response to changing conditions"
+    facet_examples:
+      - rigid
+      - responsive
+      - flexible
+      - transformative
+
+modes:
+  Exploration:
+    description: "Use this tool to map all possible pathways and connections in the problem space."
+    fields:
+      exploration_title:
+        type: "str"
+        required: true
+      exploration_content:
+        type: "str"
+        required: true
+      nodes:
+        type: "List[str]"
+        required: true
+      initial_connections:
+        type: "List[str]"
+        required: true
+      constraints:
+        type: "str"
+        required: false
+        default: "No specific constraints identified"
+      resources:
+        type: "str"
+        required: true
+      adaptability:
+        type: "str"
+        facet: "Adaptability"
+        default: "responsive"
+
+  Flow:
+    description: "Use this tool to determine where resources, energy, or attention should be concentrated."
+    fields:
+      flow_title:
+        type: "str"
+        required: true
+      flow_content:
+        type: "str"
+        required: true
+      high_priority_pathways:
+        type: "List[str]"
+        required: true
+      resource_sources:
+        type: "List[str]"
+        required: true
+      resource_sinks:
+        type: "List[str]"
+        required: true
+      flow_intensity:
+        type: "str"
+        facet: "FlowIntensity"
+        default: "moderate"
+      efficiency:
+        type: "str"
+        facet: "Efficiency"
+        default: "functional"
+
+  Pruning:
+    description: "Use this tool to identify and eliminate inefficient or redundant pathways."
+    fields:
+      pruning_title:
+        type: "str"
+        required: true
+      pruning_content:
+        type: "str"
+        required: true
+      pathways_to_eliminate:
+        type: "List[str]"
+        required: true
+      reasoning:
+        type: "str"
+        required: true
+      expected_savings:
+        type: "str"
+        required: false
+        default: "Resource savings not quantified"
+      resilience:
+        type: "str"
+        facet: "Resilience"
+        default: "robust"
+      efficiency:
+        type: "str"
+        facet: "Efficiency"
+        default: "optimized"
+
+  Network:
+    description: "Use this tool to document the final optimized network solution."
+    fields:
+      network_title:
+        type: "str"
+        required: true
+      network_content:
+        type: "str"
+        required: true
+      retained_pathways:
+        type: "List[str]"
+        required: true
+      network_topology:
+        type: "str"
+        required: true
+      flow_intensity:
+        type: "str"
+        facet: "FlowIntensity"
+        default: "significant"
+      efficiency:
+        type: "str"
+        facet: "Efficiency"
+        default: "optimized"
+      resilience:
+        type: "str"
+        facet: "Resilience"
+        default: "robust"
+      adaptability:
+        type: "str"
+        facet: "Adaptability"
+        default: "flexible"
+      emergent_properties:
+        type: "str"
+        required: false
+        default: "No unexpected properties identified"
