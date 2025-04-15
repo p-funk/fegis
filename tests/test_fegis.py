@@ -196,7 +196,7 @@ def test_artifact_field_mapper():
     
     # Verify metadata
     assert metadata["mode"] == "TestCase"
-    assert "memory_id" in metadata["provenance"]
+    assert "artifact_id" in metadata["provenance"]
     assert metadata["facets"]["status"] == "pending"
     assert metadata["facets"]["priority"] == "medium"
     assert metadata["relata"]["dependencies"] == ["setup", "data"]
@@ -226,7 +226,7 @@ async def test_qdrant_storage_and_retrieval():
         test_doc = "This is a test document"
         test_metadata = {
             "mode": "Thought",
-            "provenance": {"memory_id": str(uuid.uuid4())}
+            "provenance": {"artifact_id": str(uuid.uuid4())}
         }
         
         # Store the document

@@ -87,8 +87,8 @@ async def server_lifespan(server: Server) -> AsyncIterator[dict]:
                     metadata=[metadata]
                 )
 
-                memory_id = metadata['provenance']['memory_id']
-                return {"stored": f"{mode_name} with memory_id {memory_id}"}
+                memory_id = metadata['provenance']['artifact_id']
+                return {"stored": f"{mode_name} with artifact_id {memory_id}"}
 
             except Exception as e:
                 await ctx.debug(f"Error in process_mode: {str(e)}")
@@ -252,7 +252,7 @@ def register_query_tools():
 
     class RetrieveInput(BaseModel):
         """Input model for artifact retrieval by memory ID."""
-        memory_id: str
+        artifact_id: str
 
     @mcp.tool(
         name="fegis_retrieve",
@@ -266,8 +266,8 @@ def register_query_tools():
         # Create a filter for exact ID match
         filter_obj = Filter(
             must=[FieldCondition(
-                key="provenance.memory_id",
-                match=MatchValue(value=input_data.memory_id)
+                key="provenance.artifact_id",
+                match=MatchValue(value=input_data.artifact_id)
             )]
         )
 
@@ -280,7 +280,7 @@ def register_query_tools():
         )
 
         if not results:
-            return {"error": f"No cognitive artifact found with memory ID: {input_data.memory_id}"}
+            return {"error": f"No cognitive artifact found with memory ID: {input_data.artifact_id}"}
 
         result = results[0]
         return {

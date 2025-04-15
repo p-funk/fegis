@@ -129,7 +129,7 @@ class ArtifactFieldMapper:
         metadata = {
             "mode": mode_name,
             "provenance": {
-                "memory_id": str(uuid.uuid4()),
+                "artifact_id": str(uuid.uuid4()),
                 "created_at": datetime.now().isoformat()
             },
             "facets": {},
