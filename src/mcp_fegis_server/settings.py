@@ -45,7 +45,6 @@ class ConfigSettings(BaseSettings):
     - CONFIG_PATH: Path to the YAML archetype definition file
     """
     config_path: str = Field(
-        default="archetypes/test_fegis.yaml",
+        default="archetypes/example.yaml",
         validation_alias="CONFIG_PATH",
-        description="Path to the YAML file containing the archetype definition"
     )

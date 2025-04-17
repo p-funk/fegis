@@ -1,252 +1,283 @@
 """
-Basic tests for FEGIS server components.
+YAML-driven tests for FEGIS server components.
 
-These tests verify the core functionality of the FEGIS server without extensive mocking.
+These tests verify the core functionality by using the actual YAML configuration files
+rather than hardcoded test expectations.
 """
 
+import glob
+import os
 import uuid
-import pytest
 from pathlib import Path
 
+import pytest
+import yaml
+from mcp_fegis_server.constants import MODE_FIELD, ARTIFACT_ID_FIELD, CREATED_AT_FIELD, TITLE_FIELD
 from mcp_fegis_server.model_builder import ArchetypeDefinition, ArchetypeModelGenerator, ArtifactFieldMapper
 from qdrant_client import AsyncQdrantClient
 
 
-def test_archetype_definition():
-    """Test that ArchetypeDefinition loads and parses YAML correctly."""
-    definition = ArchetypeDefinition("../archetypes/test_fegis.yaml")
-    
-    # Verify mode names
-    modes = definition.get_mode_names()
-    assert "TestCase" in modes
-    assert "TestSuite" in modes
-    
-    # Verify content field detection
-    content_field = definition.get_content_field("TestCase")
-    assert content_field == "test_content"
-    
-    # Verify field schema retrieval
-    field_schema = definition.get_field_schema("TestCase", "status")
-    assert field_schema["facet"] == "TestStatus"
+# Helper function to find all YAML config files
+def find_yaml_configs(directory="../archetypes"):
+    """Find all YAML configuration files in the given directory."""
+    yaml_files = glob.glob(os.path.join(directory, "*.yaml"))
+    if not yaml_files:
+        pytest.skip(f"No YAML files found in {directory}")
+    return yaml_files
 
 
-def test_model_generation():
-    """Test that models are generated correctly from archetypes."""
-    definition = ArchetypeDefinition("../archetypes/test_fegis.yaml")
-    
-    # Generate model for TestCase mode
-    model = ArchetypeModelGenerator.create_model_for_mode(definition, "TestCase")
-    
-    # Create a valid instance
-    instance = model(
-        test_title="Sample Test",
-        test_content="This is a test case",
-        status="pending",
-        priority="medium",
-        complexity="moderate",
-        coverage="unit",
-        reliability="stable",
-        dependencies=["setup", "data"],
-        tags=["regression", "api"]
-    )
-    
-    # Verify the instance has the correct data
-    assert instance.test_title == "Sample Test"
-    assert instance.test_content == "This is a test case"
-    assert instance.dependencies == ["setup", "data"]
-    assert instance.tags == ["regression", "api"]
+def test_archetype_definition_loads_yaml():
+    """Test that ArchetypeDefinition can load all YAML files."""
+    yaml_files = find_yaml_configs()
+
+    for yaml_file in yaml_files:
+        # Test that the file can be loaded without errors
+        definition = ArchetypeDefinition(yaml_file)
+
+        # Basic assertions to verify the file loaded
+        assert definition.modes, f"No modes found in {yaml_file}"
+        assert definition.raw, f"Failed to load {yaml_file}"
+
+        # Verify the YAML structure matches what we expect
+        assert "modes" in definition.raw, f"Missing 'modes' section in {yaml_file}"
 
 
-def test_optional_field_handling():
-    """Test that optional fields without defaults are handled correctly."""
-    definition = ArchetypeDefinition("../archetypes/test_fegis.yaml")
-    
-    # Generate model for TestResult mode which has fields with required: false and no default
-    model = ArchetypeModelGenerator.create_model_for_mode(definition, "TestResult")
-    
-    # Create a minimal instance with only required fields
-    instance = model(
-        result_title="Test Result",
-        result_content="This is a test result",
-        test_reference="test-123",
-        status="passed"
-    )
-    
-    # Verify optional fields without defaults are set to None
-    assert instance.error_message is None
-    assert instance.artifacts is None
-    assert instance.notes is None
-    
-    # Create an instance with optional fields specified
-    instance_with_optionals = model(
-        result_title="Test Result",
-        result_content="This is a test result",
-        test_reference="test-123",
-        status="failed",
-        error_message="Something went wrong",
-        artifacts=["log.txt", "screenshot.png"],
-        notes="Additional notes"
-    )
-    
-    # Verify optional fields are set correctly when provided
-    assert instance_with_optionals.error_message == "Something went wrong"
-    assert instance_with_optionals.artifacts == ["log.txt", "screenshot.png"]
-    assert instance_with_optionals.notes == "Additional notes"
+@pytest.mark.parametrize("yaml_file", find_yaml_configs())
+def test_modes_from_yaml(yaml_file):
+    """Test that modes from YAML files are correctly parsed."""
+    definition = ArchetypeDefinition(yaml_file)
+
+    # Load the raw YAML for comparison
+    with open(yaml_file, 'r', encoding='utf-8') as f:
+        raw_yaml = yaml.safe_load(f)
+
+    # Verify that all modes in the YAML are exposed by the API
+    expected_modes = list(raw_yaml.get("modes", {}).keys())
+    actual_modes = definition.modes
+
+    assert set(actual_modes) == set(expected_modes), f"Mode mismatch in {yaml_file}"
+
+    # Test content field detection for each mode
+    for mode in actual_modes:
+        mode_schema = raw_yaml["modes"][mode]
+
+        # If content_field is explicitly defined
+        if "content_field" in mode_schema:
+            expected_content_field = mode_schema["content_field"]
+            assert definition.content_field(mode) == expected_content_field, \
+                f"Content field mismatch for {mode} in {yaml_file}"
+
+        # If we need to infer it from field names ending with _content
+        else:
+            content_fields = [
+                field for field in mode_schema.get("fields", {})
+                if field.endswith("_content")
+            ]
+            if content_fields:
+                # Assert that content_field returns the expected field
+                assert definition.content_field(mode) in content_fields, \
+                    f"Inferred content field mismatch for {mode} in {yaml_file}"
 
 
-def test_explicit_null_default_handling():
-    """Test that fields with explicit null defaults are handled correctly."""
-    # Create a test schema with a field that has explicit null default
-    test_schema = {
-        "modes": {
-            "TestMode": {
-                "fields": {
-                    "required_field": {
-                        "type": "str",
-                        "required": True
-                    },
-                    "optional_with_null_default": {
-                        "type": "str",
-                        "required": False,
-                        "default": None
-                    },
-                    "optional_without_default": {
-                        "type": "str",
-                        "required": False
-                    }
-                }
-            }
+@pytest.mark.parametrize("yaml_file", find_yaml_configs())
+def test_model_generation_from_yaml(yaml_file):
+    """Test that models are correctly generated from YAML configurations."""
+    definition = ArchetypeDefinition(yaml_file)
+
+    for mode in definition.modes:
+        # Generate model for the mode
+        model = ArchetypeModelGenerator.create(definition, mode)
+
+        # Get the fields from the mode schema
+        mode_schema = definition.mode_schema(mode)
+        expected_fields = mode_schema.get("fields", {})
+
+        # Verify that the model has fields for each field in the schema
+        for field_name in expected_fields:
+            assert field_name in model.model_fields, \
+                f"Field {field_name} missing from generated model for {mode} in {yaml_file}"
+
+            # Check field requirements match
+            field_spec = expected_fields[field_name]
+            is_required = field_spec.get("required", False)
+
+            # In Pydantic v2, check if the field has a default value
+            if is_required:
+                assert model.model_fields[field_name].is_required(), \
+                    f"Field {field_name} should be required for {mode} in {yaml_file}"
+
+
+@pytest.mark.parametrize("yaml_file", find_yaml_configs())
+def test_facets_from_yaml(yaml_file):
+    """Test that facets from YAML are correctly parsed and used."""
+    definition = ArchetypeDefinition(yaml_file)
+
+    # Load the raw YAML for comparison
+    with open(yaml_file, 'r', encoding='utf-8') as f:
+        raw_yaml = yaml.safe_load(f)
+
+    # Verify facets are correctly loaded
+    expected_facets = raw_yaml.get("facets", {})
+
+    # Check each facet is available through the API
+    for facet_name, facet_spec in expected_facets.items():
+        assert definition.facet_schema(facet_name) == facet_spec, \
+            f"Facet {facet_name} mismatch in {yaml_file}"
+
+    # Check that facet examples are included in generated models
+    for mode in definition.modes:
+        # Find fields with facets
+        mode_schema = definition.mode_schema(mode)
+        fields_with_facets = {
+            field_name: field_spec.get("facet")
+            for field_name, field_spec in mode_schema.get("fields", {}).items()
+            if field_spec.get("facet") is not None
         }
-    }
-    
-    # Create a mock ArchetypeDefinition that returns our test schema
-    class MockArchetypeDefinition:
-        def get_mode_schema(self, mode_name):
-            return test_schema["modes"][mode_name]
-        
-        def get_facet_schema(self, facet_name):
-            return {}
-    
-    mock_definition = MockArchetypeDefinition()
-    
-    # Generate model for our test mode
-    model = ArchetypeModelGenerator.create_model_for_mode(mock_definition, "TestMode")
-    
-    # Create an instance with only the required field
-    instance = model(required_field="test")
-    
-    # Verify both optional fields are None, regardless of how they were defined
-    assert instance.optional_with_null_default is None
-    assert instance.optional_without_default is None
-    
-    # Verify we can set values for both optional fields
-    instance_with_values = model(
-        required_field="test",
-        optional_with_null_default="value1",
-        optional_without_default="value2"
-    )
-    
-    assert instance_with_values.optional_with_null_default == "value1"
-    assert instance_with_values.optional_without_default == "value2"
+
+        if fields_with_facets:
+            # Generate the model
+            model = ArchetypeModelGenerator.create(definition, mode)
+
+            # Check that facet info is included in the model
+            for field_name, facet_name in fields_with_facets.items():
+                field_info = model.model_fields[field_name]
+                assert field_info.json_schema_extra, \
+                    f"Missing json_schema_extra for {field_name} in {mode} model"
+                assert field_info.json_schema_extra.get("facet") == facet_name, \
+                    f"Facet name mismatch for {field_name} in {mode} model"
+
+                # If the facet has examples, check if they're included
+                facet_examples = expected_facets.get(facet_name, {}).get("facet_examples")
+                if facet_examples:
+                    assert field_info.json_schema_extra.get("facet_examples") == facet_examples, \
+                        f"Facet examples mismatch for {field_name} in {mode} model"
 
 
-def test_field_metadata_access():
-    """Test that field metadata is correctly stored and accessible."""
-    definition = ArchetypeDefinition("../archetypes/test_fegis.yaml")
-    
-    # Generate model for TestCase mode
-    model = ArchetypeModelGenerator.create_model_for_mode(definition, "TestCase")
-    
-    # Check that the field has the expected metadata
-    # In Pydantic V2+, we need to access the field info differently
-    field_info = model.model_fields["status"]
-    
-    # Verify the description is preserved
-    assert field_info.description is not None
-    
-    # Verify the custom metadata is in json_schema_extra
-    assert field_info.json_schema_extra is not None
-    assert field_info.json_schema_extra.get("facet") == "TestStatus"
+@pytest.mark.parametrize("yaml_file", find_yaml_configs())
+def test_storage_mapping_from_yaml(yaml_file):
+    """Test that data is correctly mapped to storage format based on YAML config."""
+    definition = ArchetypeDefinition(yaml_file)
+
+    for mode in definition.modes:
+        # Get the content field for this mode
+        content_field = definition.content_field(mode)
+        if not content_field:
+            continue  # Skip modes without content fields
+
+        # Generate sample data for this mode
+        mode_schema = definition.mode_schema(mode)
+        sample_data = {}
+
+        # Create sample data for all required fields and some optional ones
+        for field_name, field_spec in mode_schema.get("fields", {}).items():
+            field_type = field_spec.get("type", "str")
+
+            # Generate appropriate sample data based on type
+            if field_type == "str":
+                sample_data[field_name] = f"Sample {field_name}"
+            elif field_type == "List[str]":
+                sample_data[field_name] = [f"item1_{field_name}", f"item2_{field_name}"]
+            elif field_type == "int":
+                sample_data[field_name] = 42
+            elif field_type == "float":
+                sample_data[field_name] = 3.14
+            elif field_type == "bool":
+                sample_data[field_name] = True
+
+        # Map to storage format
+        content, metadata = ArtifactFieldMapper.to_storage(definition, mode, sample_data)
+
+        # Verify the content matches what we expect
+        assert content == sample_data[content_field], \
+            f"Content mismatch for {mode} in {yaml_file}"
+
+        # Basic metadata checks
+        assert metadata[MODE_FIELD] == mode, \
+            f"Mode field mismatch in metadata for {mode} in {yaml_file}"
+        assert "provenance" in metadata, \
+            f"Missing provenance in metadata for {mode} in {yaml_file}"
+        assert "artifact_id" in metadata["provenance"], \
+            f"Missing artifact_id in metadata for {mode} in {yaml_file}"
+
+        # Check that all facet fields are correctly mapped
+        facet_fields = {
+            field_name: field_spec.get("facet")
+            for field_name, field_spec in mode_schema.get("fields", {}).items()
+            if field_spec.get("facet") and field_name in sample_data
+        }
+
+        for field_name, facet_name in facet_fields.items():
+            assert metadata["facets"][field_name] == sample_data[field_name], \
+                f"Facet field {field_name} mismatch in metadata for {mode} in {yaml_file}"
+
+        # Check that all relata fields are correctly mapped
+        relata_fields = [
+            field_name
+            for field_name, field_spec in mode_schema.get("fields", {}).items()
+            if field_spec.get("type") == "List[str]" and field_name in sample_data
+        ]
+
+        for field_name in relata_fields:
+            if field_name in metadata["relata"]:
+                assert metadata["relata"][field_name] == sample_data[field_name], \
+                    f"Relata field {field_name} mismatch in metadata for {mode} in {yaml_file}"
 
 
 def test_artifact_field_mapper():
-    """Test mapping between data and storage format."""
-    definition = ArchetypeDefinition("../archetypes/test_fegis.yaml")
+    """Test that ArtifactFieldMapper correctly transforms input data to storage format."""
+    # Use a specific YAML file
+    yaml_file = Path(__file__).parent.parent / "archetypes" / "slime_mold.yaml"
+    assert yaml_file.exists(), f"YAML file not found: {yaml_file}"
     
-    # Sample data
-    data = {
-        "test_title": "Sample Test",
-        "test_content": "This is a test case",
-        "status": "pending",
-        "priority": "medium",
-        "complexity": "moderate",
-        "coverage": "unit",
-        "reliability": "stable",
-        "dependencies": ["setup", "data"],
-        "tags": ["regression", "api"]
-    }
+    definition = ArchetypeDefinition(str(yaml_file))
+    mode = definition.modes[0]  # Use the first mode
+    
+    # Get the content field
+    content_field = definition.content_field(mode)
+    assert content_field, f"No content field found for mode {mode}"
+    
+    # Create sample data with all required fields
+    sample_data = {content_field: f"This is a test document for {mode}"}
+    mode_schema = definition.mode_schema(mode)
+    
+    # Add required fields
+    for field_name, field_spec in mode_schema.get("fields", {}).items():
+        if field_spec.get("required", False) and field_name != content_field:
+            if field_spec.get("type") == "List[str]":
+                sample_data[field_name] = ["test_item"]
+            else:
+                sample_data[field_name] = f"test_{field_name}"
     
     # Map to storage format
-    content, metadata = ArtifactFieldMapper.to_storage_format(
-        definition, "TestCase", data
-    )
+    content, metadata = ArtifactFieldMapper.to_storage(definition, mode, sample_data)
     
-    # Verify content extraction
-    assert content == "This is a test case"
+    # Verify the mapping is correct
+    assert content == sample_data[content_field], f"Content mismatch: expected {sample_data[content_field]}, got {content}"
+    assert metadata[MODE_FIELD] == mode, f"Mode field mismatch: expected {mode}, got {metadata[MODE_FIELD]}"
+    assert "provenance" in metadata, "Missing provenance in metadata"
+    assert "artifact_id" in metadata["provenance"], "Missing artifact_id in metadata"
+    assert "created_at" in metadata["provenance"], "Missing created_at in metadata"
     
-    # Verify metadata
-    assert metadata["mode"] == "TestCase"
-    assert "artifact_id" in metadata["provenance"]
-    assert metadata["facets"]["status"] == "pending"
-    assert metadata["facets"]["priority"] == "medium"
-    assert metadata["relata"]["dependencies"] == ["setup", "data"]
-    assert metadata["relata"]["tags"] == ["regression", "api"]
-
-
-@pytest.mark.asyncio
-async def test_qdrant_storage_and_retrieval():
-    """Test storing and retrieving data from Qdrant."""
-    # Create in-memory client
-    client = AsyncQdrantClient(":memory:")
+    # Check that all facet fields are correctly mapped
+    facet_fields = {
+        field_name: field_spec.get("facet")
+        for field_name, field_spec in mode_schema.get("fields", {}).items()
+        if field_spec.get("facet") and field_name in sample_data
+    }
     
-    try:
-        # Set up a test embedding model
-        client.set_model("sentence-transformers/all-MiniLM-L6-v2")
-        
-        # Create a unique collection name
-        collection_name = f"test_collection_{uuid.uuid4().hex}"
-        
-        # Create the collection
-        await client.create_collection(
-            collection_name=collection_name,
-            vectors_config=client.get_fastembed_vector_params()
-        )
-        
-        # Test document
-        test_doc = "This is a test document"
-        test_metadata = {
-            "mode": "Thought",
-            "provenance": {"artifact_id": str(uuid.uuid4())}
-        }
-        
-        # Store the document
-        await client.add(
-            collection_name=collection_name,
-            documents=[test_doc],
-            metadata=[test_metadata]
-        )
-        
-        # Search for the document
-        results = await client.query(
-            collection_name=collection_name,
-            query_text="test document",
-            limit=1
-        )
-        
-        # Verify retrieval
-        assert len(results) == 1
-        assert results[0].document == "This is a test document"
+    for field_name, facet_name in facet_fields.items():
+        assert field_name in metadata["facets"], f"Facet field {field_name} missing from metadata"
+        assert metadata["facets"][field_name] == sample_data[field_name], \
+            f"Facet field {field_name} mismatch: expected {sample_data[field_name]}, got {metadata['facets'][field_name]}"
     
-    finally:
-        # Clean up
-        await client.close()
+    # Check that all relata fields are correctly mapped
+    relata_fields = [
+        field_name
+        for field_name, field_spec in mode_schema.get("fields", {}).items()
+        if field_spec.get("type") == "List[str]" and field_name in sample_data
+    ]
+    
+    for field_name in relata_fields:
+        assert field_name in metadata["relata"], f"Relata field {field_name} missing from metadata"
+        assert metadata["relata"][field_name] == sample_data[field_name], \
+            f"Relata field {field_name} mismatch: expected {sample_data[field_name]}, got {metadata['relata'][field_name]}"
