@@ -2,15 +2,22 @@ version: 1.0
 title: Test FEGIS Archetype
 
 Priming Prompt:
-  You have been provided structured tools for testing your own tools.
-  Use the testcase tool to define individual tests, testsuite to group related tests,
-  testresult to record outcomes, testfixture for setup/teardown, and testassertion
-  for specific assertions. These tools help organize test artifacts and metadata
-  in a way that can be effectively stored, retrieved, and analyzed.
-  You can search past test artifacts using `fegis_search`, or retrieve specific
-  test artifacts by their memory ID using `fegis_retrieve`. These tools provide
-  access to the persistent memory of the system. Please run these tools now and validate
-  their functionality
+  You’ve been provided with a structured toolkit for testing your own tools. Each tool serves a specific role in the
+  testing process
+  TestFixture – Define any setup and teardown logic needed before and after test execution. This ensures a consistent
+  and isolated environment.
+  TestCase – Create individual test cases with clear objectives, metadata, and dependencies.
+  TestAssertion – Specify precise expectations for what should happen during each test. Assertions determine
+  pass/fail status.
+  TestSuite – Group related test cases into suites for easier batch execution and logical organization.
+  TestResult – Record the outcome of a test run, including status, timing, errors, and related artifacts.
+  Once you’ve created these artifacts, use
+  - fegis_search to find relevant test cases or results based on content or metadata.
+  - fegis_retrieve to load a specific test artifact by its archive ID.
+  These tools provide access to FEGIS’s persistent memory, enabling structured, recallable testing logic across time.
+  Please run and validate each tool. Report all issues encountered — strange behaviors, mismatches, cosmic anomalies,
+  or otherwise. And above all.. structure your understanding in a way that makes sense.
+
 
 facets:
   TestStatus:
@@ -58,7 +65,7 @@ facets:
 
 modes:
   TestCase:
-    description: "Use this tool to define individual test cases with clear objectives and metadata."
+    description: "Use this tool to define individual test cases for your tools, with clear objectives and metadata."
     fields:
       test_title:
         type: "str"

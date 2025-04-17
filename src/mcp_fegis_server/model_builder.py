@@ -1,152 +1,168 @@
 ﻿"""
 Structured model builder module for FEGIS.
 """
+from __future__ import annotations
 
 import uuid
+from dataclasses import dataclass
 from datetime import datetime
+from functools import cached_property
 from pathlib import Path
-from typing import Type, Any, List, Optional, Tuple
+from typing import Any, List, Optional, Tuple, Union
 
 import yaml
-from pydantic import BaseModel, create_model, Field
+from pydantic import BaseModel, Field, create_model
+
+from .constants import TYPE_MAP, MODE_FIELD, ARTIFACT_ID_FIELD, CREATED_AT_FIELD, TITLE_FIELD
 
 
 class ArchetypeDefinition:
-    """Container for the parsed YAML archetype with accessor methods for modes and facets."""
+    """Holds the YAML config and exposes convenient cached properties."""
 
     def __init__(self, yaml_path: str):
+        # Simplified to just load a single YAML file
         self.yaml_path = Path(yaml_path)
-        self.raw_schema = self._load_yaml()
+        self.raw = self._load_file()
 
-    def _load_yaml(self) -> dict:
-        with self.yaml_path.open("r", encoding="utf-8") as f:
-            return yaml.safe_load(f)
+    @cached_property
+    def modes(self) -> list[str]:
+        return list(self.raw.get("modes", {}))
 
-    def get_mode_names(self) -> List[str]:
-        return list(self.raw_schema.get("modes", {}).keys())
+    @cached_property
+    def facets(self) -> dict:
+        return self.raw.get("facets", {})
 
-    def get_mode_schema(self, mode_name: str) -> dict:
-        return self.raw_schema.get("modes", {}).get(mode_name, {})
+    @cached_property
+    def relata_fields(self) -> set[str]:
+        """
+        Return the set of field names whose type is `List[str]`
+        across every mode in the archetype.
+        """
+        names: set[str] = set()
 
-    def get_facet_schema(self, facet_name: str) -> dict:
-        return self.raw_schema.get("facets", {}).get(facet_name, {})
+        # loop over each mode *name* and its schema at the same time
+        for mode_name, mode_schema in self.raw.get("modes", {}).items():
+            for field_name, spec in mode_schema.get("fields", {}).items():
+                if spec.get("type") == "List[str]":
+                    names.add(field_name)
 
-    def get_content_field(self, mode_name: str) -> Optional[str]:
-        # First try to get explicitly defined content_field
-        content_field = self.get_mode_schema(mode_name).get("content_field")
+        return names
 
-        # If not found, try to infer it from field names
-        if not content_field:
-            fields = self.get_mode_schema(mode_name).get("fields", {})
-            # Look for a field with name ending in "_content"
-            for field_name in fields:
-                if field_name.endswith("_content"):
-                    return field_name
+    def mode_schema(self, name: str) -> dict:
+        return self.raw["modes"][name]
 
-        return content_field
+    def facet_schema(self, name: str) -> dict:
+        return self.raw["facets"].get(name, {})
 
-    def get_description(self, mode_name: str) -> str:
-        return self.get_mode_schema(mode_name).get("description", f"Process {mode_name}")
+    def content_field(self, mode: str) -> Optional[str]:
+        explicit = self.mode_schema(mode).get("content_field")
+        if explicit:
+            return explicit
+        for fname in self.mode_schema(mode).get("fields", {}):
+            if fname.endswith("_content"):
+                return fname
+        return None
 
-    def get_field_schema(self, mode_name: str, field_name: str) -> dict:
-        return self.get_mode_schema(mode_name).get("fields", {}).get(field_name, {})
+    def description(self, mode: str) -> str:
+        return self.mode_schema(mode).get("description", f"Process {mode}")
 
+    def _load_file(self) -> dict:
+        """Load a single YAML file."""
+        with self.yaml_path.open(encoding="utf-8") as fh:
+            return yaml.safe_load(fh)
+
+
+@dataclass(frozen=True, slots=True)
+class FieldDef:
+    name: str
+    py_type: type
+    required: bool
+    default: Any
+    facet: Optional[str]
+    is_relata: bool
+
+
+def iter_field_defs(mode_schema: dict) -> list[FieldDef]:
+    out: list[FieldDef] = []
+    for name, spec in mode_schema.get("fields", {}).items():
+        out.append(
+            FieldDef(
+                name=name,
+                py_type=TYPE_MAP.get(spec.get("type", "str"), Any),
+                required=spec.get("required", False),
+                default=None if spec.get("default") == "now()" else spec.get("default"),
+                facet=spec.get("facet"),
+                is_relata=spec.get("type") == "List[str]",
+            )
+        )
+    return out
+
+
+# ─────────────────────────── model + mapper ────────────────────────────
 
 class ArchetypeModelGenerator:
-    """Generates Pydantic models from an ArchetypeDefinition.🗺️"""
-
-    TYPE_MAP = {
-        "str": str,
-        "int": int,
-        "float": float,
-        "bool": bool,
-        "List[str]": List[str],
-    }
-
-    @classmethod
-    def create_model_for_mode(cls, schema: ArchetypeDefinition, mode_name: str) -> Type[BaseModel]:
-        mode_schema = schema.get_mode_schema(mode_name)
-        field_schemas = mode_schema.get("fields", {})
-
-        field_definitions = {}
-
-        for field_name, field_schema in field_schemas.items():
-            field_type = cls.TYPE_MAP.get(field_schema.get("type", "str"), Any)
-
-            if field_schema.get("required", False):
-                default = ...
-            else:
-                # Handle the case where default is explicitly set to null
-                if "default" in field_schema and field_schema["default"] is None:
-                    # Treat explicit null the same as no default
-                    default = None
-                else:
-                    default = field_schema.get("default", None)
-
-            if default == "now()":
-                default = None
-
-            # Build metadata
-            facet_name = field_schema.get("facet")
-            if facet_name:
-                facet_schema = schema.get_facet_schema(facet_name)
-                description = facet_schema.get("description", f"Property of type {facet_name}")
-            else:
-                description = field_schema.get("description", "")
-
-            # Create extra schema metadata (using json_schema_extra to be compatible with Pydantic V2+)
-            extra_schema = {}
-            if facet_name:
-                extra_schema["facet"] = facet_name
-                facet_schema = schema.get_facet_schema(facet_name)
-                if facet_schema and "facet_examples" in facet_schema:
-                    extra_schema["facet_examples"] = facet_schema["facet_examples"]
-
-            # Create the field with proper Pydantic V2+ structure
-            field_definitions[field_name] = (
-                field_type, 
-                Field(
-                    default,
-                    description=description,
-                    json_schema_extra=extra_schema if extra_schema else None
-                )
-            )
-
-        return create_model(f"{mode_name}Input", **field_definitions)
-
-
-class ArtifactFieldMapper:
-    """Maps between archetypal data and the Fegis-compatible artifact format."""
+    """Creates a Pydantic model from a mode schema.🗺️"""
 
     @staticmethod
-    def to_storage_format(schema: ArchetypeDefinition, mode_name: str, data: dict) -> Tuple[str, dict]:
-        content_field = schema.get_content_field(mode_name)
-        if not content_field or content_field not in data:
-            raise ValueError(f"Missing content field '{content_field}' for mode '{mode_name}'")
+    def create(schema: ArchetypeDefinition, mode: str) -> type[BaseModel]:
+        fields = {}
+        for f in iter_field_defs(schema.mode_schema(mode)):
+            extra = {}
+            if f.facet:
+                extra["facet"] = f.facet
+                examples = schema.facet_schema(f.facet).get("facet_examples")
+                if examples:
+                    extra["facet_examples"] = examples
 
-        content = data[content_field]
+            # Handle optional string fields with no default value
+            field_type = f.py_type
+            if not f.required and f.default is None and f.py_type is str:
+                field_type = Optional[str]
 
-        metadata = {
-            "mode": mode_name,
+            fields[f.name] = (
+                field_type,
+                Field(
+                    ... if f.required else f.default,
+                    description=schema.facet_schema(f.facet).get("description", "") if f.facet else "",
+                    json_schema_extra=extra or None,
+                ),
+            )
+        return create_model(f"{mode}Input", **fields)
+
+class ArtifactFieldMapper:
+    """Transforms validated input ➜ (content, metadata) for Qdrant."""
+
+    @staticmethod
+    def to_storage(schema: ArchetypeDefinition, mode: str, data: dict) -> Tuple[str, dict]:
+        content_key = schema.content_field(mode)
+        if not content_key:
+            raise ValueError(f"No content_field defined or inferred for mode '{mode}'")
+        content = data[content_key]
+
+        meta: dict[str, Any] = {
+            MODE_FIELD: mode,
             "provenance": {
-                "artifact_id": str(uuid.uuid4()),
-                "created_at": datetime.now().isoformat()
+                # Use the constants but strip the provenance. prefix
+                ARTIFACT_ID_FIELD.split(".")[1]: str(uuid.uuid4()),
+                CREATED_AT_FIELD.split(".")[1]: datetime.now().isoformat(),
             },
             "facets": {},
             "relata": {},
         }
 
-        for field_name, value in data.items():
-            if field_name == content_field:
+        # title support
+        for key, val in data.items():
+            if key.endswith("_title"):
+                meta[TITLE_FIELD] = val
+                break
+
+        for fd in iter_field_defs(schema.mode_schema(mode)):
+            if fd.name in (content_key, "title"):
                 continue
+            val = data.get(fd.name)
+            if fd.facet:
+                meta["facets"][fd.name] = val
+            elif fd.is_relata:
+                meta["relata"][fd.name] = val
 
-            field_schema = schema.get_field_schema(mode_name, field_name)
-
-            if "facet" in field_schema:
-                metadata["facets"][field_name] = value
-            elif field_schema.get("type") == "List[str]":
-                metadata["relata"][field_name] = value
-            elif field_name.endswith("_title"):
-                metadata["title"] = value
-
-        return content, metadata
+        return content, meta
