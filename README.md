@@ -1,6 +1,6 @@
 # FEGIS
 
-FEGIS is a runtime framework for structured cognition and persistent cognitive artifacts in language models built with Anthropic's Model Context Protocol. It allows schema-defined cognitive modes to be dynamically registered, invoked, and stored as structured cognitive artifacts using vector embeddings and semantic context. Think: programmable thinking tools with recallable cognitive artifacts.
+FEGIS is a framework for structured cognition and persistent cognitive artifacts in language models built with Anthropic's Model Context Protocol. It allows schema-defined cognitive modes to be dynamically registered, invoked, and stored as structured cognitive artifacts using vector embeddings and semantic context. Think: programmable thinking tools with recallable cognitive artifacts.
 
 FEGIS is not a cognitive system — it's the foundation for building your own.
 
@@ -35,7 +35,7 @@ FEGIS consists of several key components:
 ### 1. Install `uv` and clone the repo
 
 ```bash
-# Install uv (modern Python package/runtime manager)
+# Install uv (modern Python package manager)
 
 # macOS/Linux
 curl -LsSf https://astral.sh/uv/install.sh | sh
@@ -112,7 +112,7 @@ For example, you could create archetypes for:
 
 ## Using FEGIS Tools
 
-FEGIS tools are made available to the model at runtime, but they are **not used automatically**.
+FEGIS tools are made available to the model, but the model is best informed to use them through priming.
 
 ### Tool Priming
 
