@@ -1,20 +1,21 @@
 [project]
-name = "mcp-fegis-server"
+name = "fegis"
 authors = [
     { name = "Perry Golden", email = "goldenp@ptology.com" },
 ]
-version = "1.0.0"
-description = "A schema-driven memory engine that gives LLMs cognitive tools and structured persistent memory."
+version = "1.2.0"
+description = "FEGIS is a config-driven framework for building agents for language models leveraging model context protocol."
 readme = "README.md"
-license = "PolyForm-Noncommercial-1.0.0"
+license = "MIT"
 requires-python = ">=3.12,<3.13"
 dependencies = [
-    "mcp[cli]>=0.9.1",
+    "mcp[cli]>=1.6.0",
     "qdrant-client[fastembed]>=1.12.0",
     "click>=8.1.0",
     "asyncio>=3.4.3",
     "pytest>=8.3.5",
     "pytest-asyncio>=0.26.0",
+    "pydantic>=2.6.0",
 ]
 
 [build-system]
@@ -22,10 +23,10 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.uv]
-dev-dependencies = ["pyright>=1.1.389", "pytest>=8.3.3", "pytest-asyncio>=0.23.5", "ruff>=0.8.0"]
+dev-dependencies = ["pyright>=1.1.389", "pytest>=8.3.3", "pytest-asyncio>=0.23.5", "ruff>=0.8.0", "locust>=2.24.0"]
 
 [project.scripts]
-fegis = "mcp_fegis_server.main:main"
+fegis = "fegis.main:main"
 
 [project.urls]
 repository = "https://github.com/pfunk/FEGIS"

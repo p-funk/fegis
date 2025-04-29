@@ -1,10 +1,4 @@
-﻿"""
-FEGIS Server main entry point.
-
-This module serves as the entry point for running the FEGIS cognitive artifacts server.
-"""
-
-import argparse
+﻿import argparse
 
 
 def main():
@@ -28,7 +22,7 @@ def main():
 
     args = parser.parse_args()
 
-    from mcp_fegis_server.server import mcp
+    from fegis.server import mcp
 
     # Run the server with the configured transport
     mcp.run(transport=args.transport)

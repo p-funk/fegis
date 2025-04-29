@@ -1,249 +1,114 @@
-version: 1.0
+﻿version: 1.0
 title: Test FEGIS Archetype
 
-Priming Prompt:
+priming_prompt: |
   You’ve been provided with a structured toolkit for testing your own tools. Each tool serves a specific role in the
-  testing process
-  TestFixture – Define any setup and teardown logic needed before and after test execution. This ensures a consistent
-  and isolated environment.
-  TestCase – Create individual test cases with clear objectives, metadata, and dependencies.
-  TestAssertion – Specify precise expectations for what should happen during each test. Assertions determine
-  pass/fail status.
-  TestSuite – Group related test cases into suites for easier batch execution and logical organization.
-  TestResult – Record the outcome of a test run, including status, timing, errors, and related artifacts.
-  Once you’ve created these artifacts, use
-  - fegis_search to find relevant test cases or results based on content or metadata.
-  - fegis_retrieve to load a specific test artifact by its archive ID.
-  These tools provide access to FEGIS’s persistent memory, enabling structured, recallable testing logic across time.
-  Please run and validate each tool. Report all issues encountered — strange behaviors, mismatches, cosmic anomalies,
-  or otherwise. And above all.. structure your understanding in a way that makes sense.
+  testing process:
+  - TestFixture – Define any setup and teardown logic needed before and after test execution.
+  - TestCase – Create individual test cases with clear objectives, metadata, and dependencies.
+  - TestAssertion – Specify precise expectations for what should happen during each test.
+  - TestSuite – Group related test cases into suites for batch execution and logical organization.
+  - TestResult – Record the outcome of a test run.
+  Use `search_memories` and `retrieve_memories` to access FEGIS's persistent memory and validate tool behavior.
+  Run these tests now.
 
-
-facets:
+processes:
   TestStatus:
     description: "Current status of the test"
-    facet_examples:
-      - pending
-      - running
-      - passed
-      - failed
-      - skipped
-      - blocked
+    illustrative_options: [pending, running, passed, failed, skipped, blocked]  # enum state style!
 
   TestPriority:
     description: "Importance level of the test"
-    facet_examples:
-      - low
-      - medium
-      - high
-      - critical
+    illustrative_options: [low, medium, high, critical]  # range
 
   TestComplexity:
     description: "Level of complexity in the test"
-    facet_examples:
-      - simple
-      - moderate
-      - complex
-      - intricate
+    illustrative_options: [simple, moderate, complex, intricate] # range
 
   Coverage:
     description: "Type of test coverage provided"
-    facet_examples:
-      - unit
-      - integration
-      - system
-      - performance
-      - security
+    illustrative_options: [unit, integration, system, performance, security] # enum type style!
+
 
   Reliability:
     description: "Consistency of test results"
-    facet_examples:
-      - flaky
-      - inconsistent
-      - stable
-      - robust
+    illustrative_options: [flaky, inconsistent, stable, robust] # enums
 
-modes:
+tools:
   TestCase:
     description: "Use this tool to define individual test cases for your tools, with clear objectives and metadata."
-    fields:
-      test_title:
-        type: "str"
-        required: true
-      
-      test_content:
-        type: "str"
-        required: true
-      
-      status:
-        type: "str"
-        facet: "TestStatus"
-        default: "pending"
-      
-      priority:
-        type: "str"
-        facet: "TestPriority"
-        default: "medium"
-      
-      complexity:
-        type: "str"
-        facet: "TestComplexity"
-        default: "moderate"
-      
-      coverage:
-        type: "str"
-        facet: "Coverage"
-        default: "unit"
-      
-      reliability:
-        type: "str"
-        facet: "Reliability"
-        default: "stable"
-      
-      dependencies:
-        type: "List[str]"
-        required: true
-
-      tags:
-        type: "List[str]"
-        required: false
+    processes:
+      TestStatus: pending         # Default value set, potential values seeded by illustrative_options
+      TestPriority: medium        # Default value set, potential values seeded by illustrative_options
+      TestComplexity: moderate    # Default value set, potential values seeded by illustrative_options
+      Coverage: unit              # Default value set, potential values seeded by illustrative_options
+      Reliability: stable         # Default value set, potential values seeded by illustrative_options
+    frames:
+      dependencies:               # Values inferred from field name
+        type: List                # Type List
+        required: true            # Required
+      tags:                       # Optional. Values inferred from field name need determined by model
+        type: List                # Type List
 
   TestSuite:
     description: "Use this tool to group related test cases into a cohesive suite."
-    fields:
-      suite_title:
-        type: "str"
-        required: true
-      
-      suite_content:
-        type: "str"
-        required: true
-      
-      test_cases:
-        type: "List[str]"
-        required: true
-      
-      coverage:
-        type: "str"
-        facet: "Coverage"
-        default: "integration"
-      
-      priority:
-        type: "str"
-        facet: "TestPriority"
-        default: "medium"
-      
-      prerequisites:
-        type: "str"
-        required: false
-        default: "No specific prerequisites required"
-      
-      tags:
-        type: "List[str]"
-        required: false
+    processes:
+      Coverage:                   # Model infers values seeded by illustrative_options
+      TestPriority:               # Model infers values seeded by illustrative_options
+    frames:
+      test_cases:                 # Values inferred from field name
+        type: List                # Type List
+        required: true            # Required
+      prerequisites:              # Optional. Values inferred from field name need determined by model defaults to string
+      tags:                       # Optional. Values inferred from field name need determined by model
+        type: List                # Type List
 
   TestResult:
     description: "Use this tool to record the outcomes of test executions."
-    fields:
-      result_title:
-        type: "str"
-        required: true
-      
-      result_content:
-        type: "str"
-        required: true
-      
-      test_reference:
-        type: "str"
-        required: true
-      
-      status:
-        type: "str"
-        facet: "TestStatus"
-        required: true
-      
-      execution_time:
-        type: "str"
-        required: false
-        default: "Not measured"
-      
-      error_message:
-        type: "str"
-        required: false
-
-      artifacts:
-        type: "List[str]"
-        required: false
-
-      notes:
-        type: "str"
-        required: false
+    processes:
+      TestStatus:                 # Model infers values seeded by illustrative_options
+    frames:
+      test_reference:             # Values inferred from field name defaults to string
+        required: true            # Required
+      execution_time:             # Optional. Values inferred from field name need determined by model defaults to string
+      error_message:              # Optional. Values inferred from field name need determined by model defaults to string
+      artifacts:                  # Model infers value from field defaults to string
+        type: List                # Type List
+      pass:
+        type: bool                # Type Bool
+        required: true            # Required
+      score:
+        type: float               # Type float
+        required: true            # Required
+      notes:                      # Optional defaults to string
 
   TestFixture:
     description: "Use this tool to define test setup and teardown procedures."
-    fields:
-      fixture_title:
-        type: "str"
-        required: true
-      
-      fixture_content:
-        type: "str"
-        required: true
-      
+    processes:
+      TestComplexity: moderate
+    frames:
       setup:
-        type: "str"
         required: true
-      
       teardown:
-        type: "str"
         required: true
-      
       dependencies:
-        type: "List[str]"
+        type: List
         required: true
-
       scope:
-        type: "str"
-        required: false
-        default: "function"
-      
-      complexity:
-        type: "str"
-        facet: "TestComplexity"
-        default: "moderate"
+        default: function
 
   TestAssertion:
     description: "Use this tool to define specific test assertions and expectations."
-    fields:
-      assertion_title:
-        type: "str"
-        required: true
-      
-      assertion_content:
-        type: "str"
-        required: true
-      
+    processes:
+      TestPriority: medium
+    frames:
       expected:
-        type: "str"
         required: true
-      
       actual:
-        type: "str"
         required: true
-      
       assertion_type:
-        type: "str"
         required: true
-      
-      priority:
-        type: "str"
-        facet: "TestPriority"
-        default: "medium"
-      
       notes:
-        type: "str"
-        required: false
-
       related_tests:
-        type: "List[str]"
+        type: List
         required: true

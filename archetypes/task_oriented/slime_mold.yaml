@@ -1,0 +1,135 @@
+﻿version: 1.0
+title: True Slime Mold Network Optimization Archetype
+
+priming_prompt: |
+  You have access to biomimetic tools inspired by Physarum polycephalum's distributed intelligence.
+  Unlike conventional problem-solving, you will operate ALL tools simultaneously - exploring, strengthening, 
+  and pruning pathways in parallel, just as a slime mold does.
+
+  Remember these key principles:
+  1. No central control - solutions emerge from local interactions
+  2. Chemical trails create external memory - past explorations inform future decisions
+  3. Oscillating flows test pathway efficiency - resources pulse through the network
+  4. Competing exploration fronts resolve through differential growth rates
+  5. Robust solutions arise from redundant connections, not single optimal paths
+
+  Begin with ALL tools active: Signaling creates chemical trails, Oscillation tests connections,
+  Exploration maps possibilities, Flow determines resource allocation, and Pruning eliminates waste.
+  The Network tool synthesizes the emergent optimum.
+
+  Think like a slime mold — fluid, distributed, adaptive, and without central control.
+
+processes:
+  FlowIntensity:
+    description: "Volume of protoplasmic flow through a pathway"
+    illustrative_options: [trickle, stream, river, torrent, deluge]
+
+  EnvironmentalMemory:
+    description: "Strength of chemical trail persistence"
+    illustrative_options: [ephemeral, fading, persistent, indelible, permanent]
+
+  OscillationFrequency:
+    description: "Rhythmic pulsation rate for testing efficiency"
+    illustrative_options: [sporadic, steady, rhythmic, rapid, frantic]
+
+  CompetitiveStrength:
+    description: "Resource allocation advantage between competing fronts"
+    illustrative_options: [surrendering, yielding, competing, dominant, monopolizing]
+
+  Redundancy:
+    description: "Number of alternative pathways between nodes"
+    illustrative_options: [solitary, minimal, redundant, manifold, labyrinthine]
+
+tools:
+  Signaling:
+    description: "Establish chemical trails that create external memory of exploration."
+    processes:
+      EnvironmentalMemory: persistent
+    frames:
+      chemical_trails:
+        type: List
+        required: true
+      trail_strengths:
+        type: List
+        required: true
+      feedback_loops:
+        type: List
+        required: true
+
+  Oscillation:
+    description: "Rhythmically test pathway efficiency through pulsating flows."
+    processes:
+      OscillationFrequency: rhythmic
+    frames:
+      tested_pathways:
+        type: List
+        required: true
+      pulse_results:
+        type: List
+        required: true
+      resonance_patterns:
+        type: List
+
+  Exploration:
+    description: "Simultaneously explore all possible pathways in the problem space."
+    processes:
+      CompetitiveStrength: competing
+    frames:
+      competing_fronts:
+        type: List
+        required: true
+      front_strengths:
+        type: List
+        required: true
+      discovered_nodes:
+        type: List
+        required: true
+      potential_connections:
+        type: List
+        required: true
+
+  Flow:
+    description: "Dynamically allocate resources based on pathway performance and competition."
+    processes:
+      FlowIntensity: stream
+    frames:
+      flow_distribution:
+        type: List
+        required: true
+      path_efficiencies:
+        type: float
+        required: true
+      differential_growth:
+        type: List
+        required: true
+
+  Pruning:
+    description: "Continuously eliminate underperforming pathways while maintaining redundancy."
+    processes:
+      Redundancy: redundant
+    frames:
+      weakening_pathways:
+        type: List
+        required: true
+      elimination_criteria:
+      preserved_redundancy:
+        type: List
+        required: true
+
+  Network:
+    description: "Synthesize the continuously evolving network state."
+    processes:
+      FlowIntensity: river
+      EnvironmentalMemory: persistent
+      OscillationFrequency: rhythmic
+      Redundancy: manifold
+    frames:
+      current_topology:
+      primary_pathways:
+        type: List
+        required: true
+      redundant_pathways:
+        type: List
+        required: true
+      emergent_properties:
+      adaptation_potential:

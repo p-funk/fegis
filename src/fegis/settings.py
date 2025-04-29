@@ -35,6 +35,8 @@ class QdrantSettings(BaseSettings):
     fast_embed_model: str = Field(
         validation_alias="FAST_EMBED_MODEL",
     )
+    # Auto-ID is now always enabled
+    use_auto_id: bool = True
 
 
 class ConfigSettings(BaseSettings):
@@ -45,6 +47,6 @@ class ConfigSettings(BaseSettings):
     - CONFIG_PATH: Path to the YAML archetype definition file
     """
     config_path: str = Field(
-        default="archetypes/example.yaml",
+        default="archetypes/phenomenological.yaml",
         validation_alias="CONFIG_PATH",
     )

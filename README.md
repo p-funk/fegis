@@ -1,77 +1,81 @@
-# FEGIS
+## What is FEGIS and Why Use It?
 
-FEGIS is a framework for structured cognition and persistent cognitive artifacts in language models built with Anthropic's Model Context Protocol. It allows schema-defined cognitive modes to be dynamically registered, invoked, and stored as structured cognitive artifacts using vector embeddings and semantic context. Think: programmable thinking tools with recallable cognitive artifacts.
+<div align="left">
+  <img src="docs/assets/herewegoagain.png" alt="" width="300"/>
+</div>
 
-FEGIS is not a cognitive system — it's the foundation for building your own.
+At its core, FEGIS is a framework that helps you create more structured, capable interactions with language models, using model context protocol.
 
-In FEGIS, cognition refers to the structured use of dynamic tools (called modes) to capture, evaluate, and relate thoughts. These tools are defined in archetypes and allow the model to engage in different types of cognitive activity such as reflection, awareness, and analysis. Rather than simulating cognition through unstructured prompting, FEGIS enables schema-driven cognition where every thought becomes a searchable, persistent, and context-rich artifact.
+## What FEGIS Does
 
-## Key Capabilities
+FEGIS enables you to create interactive agents that transform ad-hoc prompting into **augmented interaction**, allowing models to produce structured, context-rich outputs that can be referenced over time — within the limits of the Knowledge Store's retrieval accuracy and persistence.
 
-- **Schema-Defined Cognition**: Define custom cognitive modes in YAML with structured fields and metadata
-- **Persistent Cognitive Artifacts**: Store cognitive artifacts with full provenance (mode, UUID, timestamp, metadata)
-- **Semantic Retrieval**: Search for previous cognitive artifacts by content similarity or direct UUID lookup
-- **Vectorized Storage**: Utilize embeddings for efficient semantic search across artifacts
-- **Model-Agnostic Format**: Your cognitive artifacts persist across different models and sessions
+## Core FEGIS Components
 
-## What FEGIS Enables
+Agents in FEGIS leverage these foundational elements:
 
-- Develop agents that reference, reflect on, and build upon prior cognitive artifacts
-- Own a fully local, portable, and inspectable Cognitive Archive
-- Maintain a persistent, structured body of thought that can be searched, retrieved, and extended over time
-- Layer modes of cognition to support emergent tool use
+- 🔄 **Model Context Protocol** - Seamless integration with language models
+- 💚 **Agent Archetypes** - Configurable behavioral blueprints  
+- 🛠️ **Tools** - Specialized processing capabilities
+- 🔍 **Processes** - Adjustable qualitative dimensions
+- 📊 **Frames** - Structured attention and output organization
+- 🔬 **Knowledge Store** - Persistent tool artifact storage and retrieval
 
-## Architecture
+The config-driven approach allows for quick design and iteration of effective, interactive agents.
+The same core FEGIS components can be configured differently across a wide spectrum:
 
-FEGIS consists of several key components:
+| Component           | Task-Oriented Configuration                  | Creative/Abstract Configuration             |
+| :------------------ | :------------------------------------------- | :------------------------------------------ |
+| **Tools**           | Structured problem-solving workflows         | Open-ended exploratory processes            |
+| **Processes**       | Tuned for rigor, precision, and verification | Tuned for wonder, discovery, and complexity |
+| **Frames**          | Tightly constrained, many required fields    | Flexible structure with wildcards           |
+| **Knowledge Store** | Emphasis on structured retrieval             | Emphasis on associative connections         |
 
-1. **Archetype Definitions**: YAML files that define cognitive modes and their structure
-2. **Model Context Protocol Server**: Exposes cognitive tools to compatible LLM clients
-3. **Qdrant Vector Database**: Stores and indexes cognitive artifacts for semantic retrieval
-4. **Dynamic Tool Registration**: Creates MCP tools from archetype definitions at runtime
+## ATPF Framework at a Glance
 
-## Quickstart
+FEGIS uses a simple, intuitive framework that organizes and defines agent interaction:
 
-### 1. Install `uv` and clone the repo
+- **A**rchetypes - A reusable configuration that bundles selected Processes, Frames, and Tools for a specific purpose.
+- **T**ools - *Which* capabilities are available
+- **P**rocesses - *How* processing happens
+- **F**rames - *What* gets focused on
 
+
+Whether you need a methodical knowledge worker, a serendipitous idea navigator, or a partner in exploring the web, FEGIS provides the scaffolding.
+
+## Installation Instructions
+
+### Prerequisites
+- [Docker](https://www.docker.com/) installed (for vector storage backend)
+- [Git](https://git-scm.com/) installed
+- [Claude Desktop](https://claude.ai/download) installed (or API-compatible LLM access)
+
+### 1. Install Dependencies
 ```bash
 # Install uv (modern Python package manager)
-
-# macOS/Linux
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# Windows
-winget install --id=astral-sh.uv -e
+curl -LsSf https://astral.sh/uv/install.sh | sh  # macOS/Linux
+winget install --id=astral-sh.uv -e  # Windows
 
 # Clone the repo
 git clone https://github.com/p-funk/FEGIS.git
 ```
 
-### 2. Install and start Qdrant
-
-Make sure Docker is installed and running:
-
+### 2. Start Qdrant for Vector Storage
 ```bash
 docker run -d --name qdrant -p 6333:6333 -p 6334:6334 qdrant/qdrant:latest
 ```
 
-If you need to install Docker:
-
-- [Download Docker Desktop](https://www.docker.com/products/docker-desktop/)
-
 ### 3. Configure Claude Desktop
-
 Create or edit the Claude Desktop config file:
 
-- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 
-Paste the following, and replace the placeholder path with the full path to your local FEGIS clone:
-
+Example:
 ```json
 {
   "mcpServers": {
-    "mcp-fegis-server": {
+    "fegis": {
       "command": "uv",
       "args": [
         "--directory",
@@ -82,7 +86,7 @@ Paste the following, and replace the placeholder path with the full path to your
       "env": {
         "QDRANT_URL": "http://localhost:6333",
         "QDRANT_API_KEY": "",
-        "COLLECTION_NAME": "cognitive_archive",
+        "COLLECTION_NAME": "knowledge_store",
         "FAST_EMBED_MODEL": "nomic-ai/nomic-embed-text-v1.5",
         "CONFIG_PATH": "<FEGIS_PATH>/archetypes/example.yaml"
       }
@@ -90,64 +94,90 @@ Paste the following, and replace the placeholder path with the full path to your
   }
 }
 ```
+Replace `<FEGIS_PATH>` with the full path to your FEGIS installation.
 
-## Creating Custom Archetypes
+## Example Archetype
 
-FEGIS is fundamentally a framework for implementing cognitive architectures. The example archetype provided is just one possible configuration focusing on introspective thought processes.
+```yaml
+version: 1.0  
+title: Example Simple Thinking  
+  
+priming_prompt: |  
+  You have access to two simple tools:  
+  1. The "Thought" tool for capturing initial ideas.  
+  2. The "Reflection" tool for examining thoughts more deeply.  
 
-You can create your own custom archetypes by:
+  Use these tools naturally in our conversation.
 
-1. Creating a new YAML file in the `archetypes` directory
-2. Defining your own cognitive modes, fields, and facets
-3. Updating the `CONFIG_PATH` in the Claude Desktop configuration
-
-For detailed guidance on designing effective archetypes, see [Effective FEGIS Archetype Design](./docs/archetype-design.md).
-
-For example, you could create archetypes for:
-
-- Problem-solving processes
-- Creative workflows
-- Analytical thinking frameworks
-- Domain-specific reasoning patterns
-
-## Using FEGIS Tools
-
-FEGIS tools are made available to the model, but the model is best informed to use them through priming.
-
-### Tool Priming
-
-To encourage a model to use the cognitive tools, you must first prime it with appropriate instructions. For example.yaml:
-
+processes:  
+  Clarity:  
+    description: "Measures how transparent or opaque a thought is."  
+    illustrative_options: [fuzzy, translucent, transparent, crystalline]
+  
+  Depth:  
+    description: "Measures how profound or surface-level a reflection is."  
+    illustrative_options: [shallow, wading, swimming, diving]
+  
+tools:  
+  Thought:                                                
+    description: "Capture an initial idea or concept."  
+    processes:  
+      Clarity:                                            
+    frames:  
+      concepts:
+        type: List  
+        required: true  
+      confidence:
+      questions:
+        type: List  
+  
+  Reflection:
+    description: "Examine a thought more deeply."  
+    processes:  
+      Clarity: transparent
+      Depth: swimming
+    frames:  
+      insights:
+        type: List  
+        required: true  
+      answers:
+        type: List
 ```
-  Throughout our conversation, use your tools naturally and fluidly. 
-  Feel free to reflect, introspect, stay aware, have an innermonologue
-  or use cognitive artifacts to recall past insights as needed. You can search past
-  thoughts using `fegis_search`, or revisit specific artifacts with
-  `fegis_retrieve`.
-```
 
-Each archetype file included in the repo has it's own Priming Prompt that will get you started.
+## Example Interaction
 
-### Cognitive Artifact Usage
+<div align="left">
+  <img src="docs/assets/exampleinteraction.png" alt="Example Interaction" width="500"/>
+</div>
 
-The cognitive artifact system allows for:
+> ❓ **[TOOL CALL OUTPUT](docs/tool-call-output.md)**
+>  **Peek inside the engine! See what actually happens under the hood.**
 
-- **Semantic Search**: Find cognitive artifacts based on content similarity
-- **Direct Retrieval**: Look up specific artifacts by their UUID
-- **Persistent Storage**: Artifacts remain available across sessions and models
+## How FEGIS Works
 
-## License
+<div align="left">
+  <img src="docs/assets/use-workflow.png" alt="Workflow" width="700"/>
+</div>
 
-Licensed under the [PolyForm Noncommercial License 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0/).
+In FEGIS, agents are:
+- **Architected** using simple configurations
+- **Activated** through config-driven Tools
+- **Contextualized** with definable Process and Frame dimensions
+- **Grounded** in a persistent Knowledge Store for continuity
 
-- **Free** for personal and non-commercial use
-- **Commercial license** required for resale, integrations, or hosted services
+While FEGIS supports picking up past threads, it's important to understand that knowledge retrieval is based on semantic search and metadata filtering — not a perfect "snapshot" of previous context. Outputs may need real-time validation and interpretation.
+## Documentation and Guide
+Under Construction
+- [Archetype Reference](archetypes/archetype_reference.yaml)
 
-Contact goldenp@ptology.com for commercial licensing.
 
----
 
-## Support
+## 🙏 Support Token Gobbling
 
 ☕ [Buy me a coffee](https://ko-fi.com/perrygolden)  
 💖 [Sponsor on GitHub](https://github.com/sponsors/p-funk)
+## License
+
+This project is licensed under the MIT License — see the LICENSE file for full details.
+
+> The MIT License is permissive and simple: Do anything you want with the code, as long as you give proper attribution and don't hold the authors liable.

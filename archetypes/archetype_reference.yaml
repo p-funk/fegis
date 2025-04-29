@@ -1,0 +1,36 @@
+﻿version: 1.0
+title: FEGIS Archetype Reference
+
+priming_prompt: |
+  This reference shows:
+  - Process defaults vs inference from illustrative_options
+  - Frame types: implicit String, List, Boolean, Float
+  - Correct handling of required fields and model freedom
+
+processes:
+  TestStatus:
+    description: "Current status of a test" # Enum type; has illustrative options
+    illustrative_options: [pending, running, passed, failed, skipped, blocked]
+
+  Coverage:
+    description: "Type of test coverage" # Enum type; model infers value based on illustrative options
+    illustrative_options: [unit, integration, system, performance, security]
+
+tools:
+  SampleTool:
+    description: "Demonstrates correct process and frame patterns, model inference"
+    processes:
+      TestStatus: pending         # Default value is set to 'pending'
+      Coverage:                   # No default; model infers a value seeded by illustrative_options
+    frames:
+      name:                       # Implicit String type; required field
+        required: true
+      tags:                       # Explicit List type; optional (model can infer or omit)
+        type: List
+      is_active:                  # Explicit bool type; required
+        type: bool
+        required: true
+      score:                      # Explicit Float type; required
+        type: Float
+        required: true
+      notes:                      # Implicit String type; optional (model can infer or omit)
