@@ -23,7 +23,7 @@ tools:
       TestStatus: pending         # Default value is set to 'pending'
       Coverage:                   # No default; model infers a value seeded by illustrative_options
     frames:
-      name:                       # Implicit String type; required field
+      name:                       # Implicit String type; required field, model infers value from field name
         required: true
       tags:                       # Explicit List type; optional (model can infer or omit)
         type: List
