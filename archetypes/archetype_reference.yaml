@@ -9,19 +9,19 @@ priming_prompt: |
 
 processes:
   TestStatus:
-    description: "Current status of a test" # Enum type; has illustrative options
+    description: "Current status of a test" # Instruction for the process.  Enum type; has illustrative options
     illustrative_options: [pending, running, passed, failed, skipped, blocked]
 
   Coverage:
-    description: "Type of test coverage" # Enum type; model infers value based on illustrative options
+    description: "Type of test coverage" # Instruction for the process. Enum type; model infers value based on illustrative options
     illustrative_options: [unit, integration, system, performance, security]
 
 tools:
   SampleTool:
     description: "Demonstrates correct process and frame patterns, model inference"
     processes:
-      TestStatus: pending         # Default value is set to 'pending'
-      Coverage:                   # No default; model infers a value seeded by illustrative_options
+      TestStatus: pending         # Executes process instructions.  Default value is set to 'pending'
+      Coverage:                   # Executes process instructions. No default; model infers a value seeded by illustrative_options
     frames:
       name:                       # Implicit String type; required field, model infers value from field name
         required: true
