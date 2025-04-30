@@ -4,33 +4,33 @@ title: FEGIS Archetype Reference
 priming_prompt: |
   This reference shows:
   - Process defaults vs inference from illustrative_options
-  - Frame types: implicit String, List, Boolean, Float
+  - Frame types: implicit String, List, bool, float
   - Correct handling of required fields and model freedom
 
 processes:
   TestStatus:
-    description: "Current status of a test" # Instruction for the process.  Enum type; has illustrative options
+    description: "Current status of a test" # Instruction for the process.  Model infers hinted by illustrative options
     illustrative_options: [pending, running, passed, failed, skipped, blocked]
 
   Coverage:
-    description: "Type of test coverage" # Instruction for the process. Enum type; model infers value based on illustrative options
+    description: "Type of test coverage" # Instruction for the process. Model infers value hinted by illustrative options
     illustrative_options: [unit, integration, system, performance, security]
 
 tools:
   SampleTool:
     description: "Demonstrates correct process and frame patterns, model inference"
     processes:
-      TestStatus: pending         # Executes process instructions.  Default value is set to 'pending'
+      TestStatus: pending         # Executes process instructions. Default value is set to 'pending'
       Coverage:                   # Executes process instructions. No default; model infers a value seeded by illustrative_options
     frames:
-      name:                       # Implicit String type; required field, model infers value from field name
+      name:                       # Implicit String type; required field, model infers instruction/desired values from field name
         required: true
-      tags:                       # Explicit List type; optional (model can infer or omit)
+      tags:                       # Explicit List type; optional (model can infer instruction/desired values or omit)
         type: List
-      is_active:                  # Explicit bool type; required
+      is_active:                  # Explicit bool type; required.  Model infers instruction/desired values from field name
         type: bool
         required: true
-      score:                      # Explicit Float type; required
-        type: Float
+      score:                      # Explicit float type; required. Model infers instruction/desired values from field name
+        type: float
         required: true
-      notes:                      # Implicit String type; optional (model can infer or omit)
+      notes:                      # Implicit String type; optional (model can infer instruction/desired values or omit)
