@@ -3,14 +3,27 @@
 
 def main():
     """
-    Main entry point for FEGIS.
+    Fegis Entry Point - Declarative Interaction Compiler
 
-    Parses command-line arguments and starts the FEGIS server with the
-    appropriate transport.
+    Initializes the Fegis server with appropriate transport protocol and loads:
+
+    1. Archetype Definition: YAML-based specification of:
+       - Semantic parameters (dimensions like Clarity, Depth)
+       - Tool interfaces (structured interaction patterns)
+       - Frame schemas (validation rules for outputs)
+
+    2. Trace Archive: Vector-based persistent memory system that:
+       - Automatically embeds and stores all tool invocations
+       - Enables semantic search by similarity
+       - Supports filtering by parameter values and frame content
+       - Maintains chronological context through timestamps
+
+    The server exposes each tool defined in the archetype, automatically generating
+    handlers that validate inputs, persist outputs, and return trace references.
     """
     # Parse command-line arguments
     parser = argparse.ArgumentParser(
-        description="FEGIS: A schema-driven cognitive framework that gives LLMs structured tools and persistent cognitive artifacts"
+        description="Fegis: A schema-driven interaction compiler for structured tool execution and persistent semantic memory"
     )
 
     parser.add_argument(

@@ -1,7 +1,7 @@
 ﻿version: 1.0
-title: True Slime Mold Network Optimization Archetype
+title: Slime Mold Network Optimization Archetype
 
-priming_prompt: |
+archetype_context: |
   You have access to biomimetic tools inspired by Physarum polycephalum's distributed intelligence.
   Unlike conventional problem-solving, you will operate ALL tools simultaneously - exploring, strengthening, 
   and pruning pathways in parallel, just as a slime mold does.
@@ -19,31 +19,31 @@ priming_prompt: |
 
   Think like a slime mold — fluid, distributed, adaptive, and without central control.
 
-processes:
+parameters:
   FlowIntensity:
     description: "Volume of protoplasmic flow through a pathway"
-    illustrative_options: [trickle, stream, river, torrent, deluge]
+    example_values: [trickle, stream, river, torrent, deluge, surge]
 
   EnvironmentalMemory:
     description: "Strength of chemical trail persistence"
-    illustrative_options: [ephemeral, fading, persistent, indelible, permanent]
+    example_values: [ephemeral, fading, persistent, indelible, permanent]
 
   OscillationFrequency:
     description: "Rhythmic pulsation rate for testing efficiency"
-    illustrative_options: [sporadic, steady, rhythmic, rapid, frantic]
+    example_values: [sporadic, steady, rhythmic, rapid, frantic]
 
   CompetitiveStrength:
     description: "Resource allocation advantage between competing fronts"
-    illustrative_options: [surrendering, yielding, competing, dominant, monopolizing]
+    example_values: [surrendering, yielding, competing, dominant, monopolizing]
 
   Redundancy:
     description: "Number of alternative pathways between nodes"
-    illustrative_options: [solitary, minimal, redundant, manifold, labyrinthine]
+    example_values: [solitary, minimal, redundant, manifold, labyrinthine]
 
 tools:
   Signaling:
     description: "Establish chemical trails that create external memory of exploration."
-    processes:
+    parameters:
       EnvironmentalMemory: persistent
     frames:
       chemical_trails:
@@ -58,7 +58,7 @@ tools:
 
   Oscillation:
     description: "Rhythmically test pathway efficiency through pulsating flows."
-    processes:
+    parameters:
       OscillationFrequency: rhythmic
     frames:
       tested_pathways:
@@ -72,7 +72,7 @@ tools:
 
   Exploration:
     description: "Simultaneously explore all possible pathways in the problem space."
-    processes:
+    parameters:
       CompetitiveStrength: competing
     frames:
       competing_fronts:
@@ -89,23 +89,27 @@ tools:
         required: true
 
   Flow:
-    description: "Dynamically allocate resources based on pathway performance and competition."
-    processes:
+    description: "Dynamically allocate resources based on pathway performance, competition, and resource discovery."
+    parameters:
       FlowIntensity: stream
     frames:
       flow_distribution:
         type: List
         required: true
       path_efficiencies:
-        type: float
+        type: number
         required: true
       differential_growth:
         type: List
         required: true
+      resource_locations:
+        type: List
+      reward_amplification:
+        type: number
 
   Pruning:
     description: "Continuously eliminate underperforming pathways while maintaining redundancy."
-    processes:
+    parameters:
       Redundancy: redundant
     frames:
       weakening_pathways:
@@ -118,7 +122,7 @@ tools:
 
   Network:
     description: "Synthesize the continuously evolving network state."
-    processes:
+    parameters:
       FlowIntensity: river
       EnvironmentalMemory: persistent
       OscillationFrequency: rhythmic

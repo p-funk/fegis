@@ -1,181 +1,159 @@
-## What is FEGIS and Why Use It?
+![Fegis Banner](docs/assets/huh-banner.png)
 
-<div align="left">
-  <img src="docs/assets/herewegoagain.png" alt="" width="300"/>
-</div>
+![Built on MCP](https://img.shields.io/badge/Built%20on-MCP-white?style=flat-square&color=000000) ![Powered by Qdrant](https://img.shields.io/badge/Stored%20in-Qdrant-FF4F70?style=flat-square&logoColor=white) ![Powered by Semantics](https://img.shields.io/badge/Powered%20by-Semantics-3B82F6?style=flat-square)
+# Fegis
 
-At its core, FEGIS is a framework that helps you create more structured, capable interactions with language models, using model context protocol.
+**Fegis** is a semantic programming framework and tool compiler that transforms YAML specifications—called _Archetypes_—into structured, reusable tools for large language models (LLMs). Built on the Model Context Protocol (MCP), Fegis compiles each Archetype into schema-validated interfaces, where field names and parameters act as **semantic directives** that guide content generation.
 
-## What FEGIS Does
+Every tool invocation is preserved in a hybrid memory system combining vector embeddings with structured metadata—forming an **emergent knowledge graph** that enables persistent memory, semantic retrieval, and exploration of interconnected ideas.
 
-FEGIS enables you to create interactive agents that transform ad-hoc prompting into **augmented interaction**, allowing models to produce structured, context-rich outputs that can be referenced over time — within the limits of the Knowledge Store's retrieval accuracy and persistence.
+## Core Components
 
-## Core FEGIS Components
+### 1. MCP Server Implementation
 
-Agents in FEGIS leverage these foundational elements:
+Fegis implements the Model Context Protocol (MCP), but unlike typical MCP servers that focus on bridging LLMs to external systems, Fegis creates **semantically rich, internally defined tools** using YAML archetypes. It extends the MCP framework by introducing parameters and frames that shape how language models understand and interact with these tools.
 
-- 🔄 **Model Context Protocol** - Seamless integration with language models
-- 💚 **Agent Archetypes** - Configurable behavioral blueprints  
-- 🛠️ **Tools** - Specialized processing capabilities
-- 🔍 **Processes** - Adjustable qualitative dimensions
-- 📊 **Frames** - Structured attention and output organization
-- 🔬 **Knowledge Store** - Persistent tool artifact storage and retrieval
+### 2. Semantic Programming Framework
 
-The config-driven approach allows for quick design and iteration of effective, interactive agents.
-The same core FEGIS components can be configured differently across a wide spectrum:
+Fegis introduces a practical form of semantic programming, where YAML structure acts as a scaffold for language model behavior. Instead of writing detailed prompts or procedural instructions, you define intent using meaningful field names, frames, and parameters.
 
-| Component           | Task-Oriented Configuration                  | Creative/Abstract Configuration             |
-| :------------------ | :------------------------------------------- | :------------------------------------------ |
-| **Tools**           | Structured problem-solving workflows         | Open-ended exploratory processes            |
-| **Processes**       | Tuned for rigor, precision, and verification | Tuned for wonder, discovery, and complexity |
-| **Frames**          | Tightly constrained, many required fields    | Flexible structure with wildcards           |
-| **Knowledge Store** | Emphasis on structured retrieval             | Emphasis on associative connections         |
+This approach treats **structure as code**: field names aren't just labels — they guide and constrain what the LLM generates. Parameters don't merely pass values — they shape the model's expressive space through the scaffolding they provide.
 
-## ATPF Framework at a Glance
+### 3. Hybrid Memory System
 
-FEGIS uses a simple, intuitive framework that organizes and defines agent interaction:
+Fegis features a hybrid memory system that combines vector embeddings with structured metadata, creating a powerful, searchable history of all tool invocations. This memory functions as an emergent knowledge graph, enabling the discovery and traversal of interconnected information pathways. All embedding and memory data remains local by default, unless explicitly configured otherwise.
 
-- **A**rchetypes - A reusable configuration that bundles selected Processes, Frames, and Tools for a specific purpose.
-- **T**ools - *Which* capabilities are available
-- **P**rocesses - *How* processing happens
-- **F**rames - *What* gets focused on
+## How LLMs Process Archetypes
 
+To understand how this works, let's look at what happens when an LLM processes the scaffolding of an Archetype:
 
-Whether you need a methodical knowledge worker, a serendipitous idea navigator, or a partner in exploring the web, FEGIS provides the scaffolding.
+```yaml
+archetype_context: |
+  You have tools for scientific education that allow you to clearly explain complex concepts with accuracy 
+  and accessibility. Focus on making information understandable while 
+  maintaining technical precision.
 
-## Installation Instructions
+parameters:
+  Length:
+    description: "Level of detail and wordiness in explanations"
+    example_values: [terse, brief, moderate, comprehensive, exhaustive]
+  Tone:
+    description: "Communication style that shapes how scientific content is presented"
+    example_values: [formal, informative, conversational, enthusiastic, socratic]
 
-### Prerequisites
-- [Docker](https://www.docker.com/) installed (for vector storage backend)
-- [Git](https://git-scm.com/) installed
-- [Claude Desktop](https://claude.ai/download) installed (or API-compatible LLM access)
-
-### 1. Install Dependencies
-```bash
-# Install uv (modern Python package manager)
-curl -LsSf https://astral.sh/uv/install.sh | sh  # macOS/Linux
-winget install --id=astral-sh.uv -e  # Windows
-
-# Clone the repo
-git clone https://github.com/p-funk/FEGIS.git
+tools:
+  Summary:
+    description: "Create a concise summary of important information."
+    parameters:
+      Length: brief
+      Tone: informative
+    frames:
+      key_points:
+        type: List
+        required: true
+      conclusion:
 ```
 
-### 2. Start Qdrant for Vector Storage
+Each element in this YAML definition serves a specific purpose:
+
+1. **The archetype_context** - Defines the conceptual space and purpose of these tools. This text can be used for documentation or injected as appropriate, documenting how these tools should be used.
+    
+2. **The parameters section** - Defines semantic dimensions that shape output:
+    
+    - Parameter name ("Length") identifies what aspect is being configured
+    - Description provides clear definition of the parameter's purpose
+    - example_values establish a spectrum of possible values ([terse...exhaustive])
+    - When used in a tool, specific values ("brief") trigger associated language patterns
+3. **The tool name "Summary"** - The model recognizes this as a tool, activating associated patterns for condensing information.
+    
+4. **The tool description** - "Create a concise summary..." sets the specific objective and purpose.
+    
+5. **The frame fields** define what content to generate:
+    
+    - Field name "key_points" guides the model to identify important elements
+    - Type constraint "List" formats output as discrete items
+    - Requirement "required: true" ensures this field will always be populated
+    - Field name "conclusion" prompts creation of a summary statement
+
+This architecture creates a structured flow where each element serves a specific purpose:
+
+```
+┌─────────────────────────────────────────────────┐
+│             YAML ↔ LLM Processing               │
+│                                                 │
+│  [Optional] archetype_context → Sets context    │
+│  parameters → Define semantic dimensions        │
+│  tool name → Identifies functional category     │
+│  description → States specific purpose          │
+│  frames → Structure and guide content creation  │
+└─────────────────────────────────────────────────┘
+```
+## Example Interaction: Cognitive Tools
+
+To see Fegis in action, check out this [example interaction with cognitive tools](./docs/example-archetype-interaction.md) that demonstrates how Thought and Reflection tools work with the memory system.
+## What Can You Build With Fegis?
+
+Fegis has been used to create:
+
+- **Thinking frameworks** that guide LLMs through complex reasoning processes
+- **Web exploration interfaces** with tools for curating and connecting content
+- **Optimization systems** inspired by biological networks
+- **Symbolic reasoning tools** using emoji as a visual language
+
+## Quick Start
+
 ```bash
+# Install uv
+# Windows
+winget install --id=astral-sh.uv -e
+
+# macOS/Linux
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# Clone the repository
+git clone https://github.com/p-funk/Fegis.git
+
+# Start Qdrant
 docker run -d --name qdrant -p 6333:6333 -p 6334:6334 qdrant/qdrant:latest
 ```
 
-### 3. Configure Claude Desktop
-Create or edit the Claude Desktop config file:
+### Configure Claude Desktop
 
-- macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
-- Windows: `%APPDATA%\Claude\claude_desktop_config.json`
+Update `claude_desktop_config.json`:
 
-Example:
 ```json
-{
-  "mcpServers": {
-    "fegis": {
-      "command": "uv",
-      "args": [
-        "--directory",
-        "<FEGIS_PATH>",
-        "run",
-        "fegis"
-      ],
-      "env": {
-        "QDRANT_URL": "http://localhost:6333",
-        "QDRANT_API_KEY": "",
-        "COLLECTION_NAME": "knowledge_store",
-        "FAST_EMBED_MODEL": "nomic-ai/nomic-embed-text-v1.5",
-        "CONFIG_PATH": "<FEGIS_PATH>/archetypes/example.yaml"
-      }
+"mcpServers": {
+  "mcp-fegis-server": {
+    "command": "uv",
+    "args": [
+      "--directory",
+      "<FEGIS_PATH>",
+      "run",
+      "fegis"
+    ],
+    "env": {
+      "QDRANT_URL": "http://localhost:6333",
+      "QDRANT_API_KEY": "",
+      "COLLECTION_NAME": "trace_archive",
+      "FAST_EMBED_MODEL": "nomic-ai/nomic-embed-text-v1.5",
+      "CONFIG_PATH": "<FEGIS_PATH>/archetypes/example.yaml"
     }
   }
 }
 ```
-Replace `<FEGIS_PATH>` with the full path to your FEGIS installation.
 
-## Example Archetype
+## Learn More
 
-```yaml
-version: 1.0  
-title: Example Simple Thinking  
-  
-priming_prompt: |  
-  You have access to two simple tools:  
-  1. The "Thought" tool for capturing initial ideas.  
-  2. The "Reflection" tool for examining thoughts more deeply.  
+- [Examples](./archetypes/) - Sample archetypes to get you started
 
-  Use these tools naturally in our conversation.
-
-processes:  
-  Clarity:  
-    description: "Measures how transparent or opaque a thought is."  
-    illustrative_options: [fuzzy, translucent, transparent, crystalline]
-  
-  Depth:  
-    description: "Measures how profound or surface-level a reflection is."  
-    illustrative_options: [shallow, wading, swimming, diving]
-  
-tools:  
-  Thought:                                                
-    description: "Capture an initial idea or concept."  
-    processes:  
-      Clarity:                                            
-    frames:  
-      concepts:
-        type: List  
-        required: true  
-      confidence:
-      questions:
-        type: List  
-  
-  Reflection:
-    description: "Examine a thought more deeply."  
-    processes:  
-      Clarity: transparent
-      Depth: swimming
-    frames:  
-      insights:
-        type: List  
-        required: true  
-      answers:
-        type: List
-```
-
-## Example Interaction
-
-<div align="left">
-  <img src="docs/assets/exampleinteraction.png" alt="Example Interaction" width="500"/>
-</div>
-
-> ❓ **[TOOL CALL OUTPUT](docs/tool-call-output.md)**
->  **Peek inside the engine! See what actually happens under the hood.**
-
-## How FEGIS Works
-
-<div align="left">
-  <img src="docs/assets/use-workflow.png" alt="Workflow" width="700"/>
-</div>
-
-In FEGIS, agents are:
-- **Architected** using simple configurations
-- **Activated** through config-driven Tools
-- **Contextualized** with definable Process and Frame dimensions
-- **Grounded** in a persistent Knowledge Store for continuity
-
-While FEGIS supports picking up past threads, it's important to understand that knowledge retrieval is based on semantic search and metadata filtering — not a perfect "snapshot" of previous context. Outputs may need real-time validation and interpretation.
-## Documentation and Guide
-Under Construction
-- [Archetype Reference](archetypes/archetype_reference.yaml)
+_more docs coming soon..._
 
 
-
-## 🙏 Support Token Gobbling
+## Support Development
 
 ☕ [Buy me a coffee](https://ko-fi.com/perrygolden)  
 💖 [Sponsor on GitHub](https://github.com/sponsors/p-funk)
+
 ## License
 
 This project is licensed under the MIT License — see the LICENSE file for full details.

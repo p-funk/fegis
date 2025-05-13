@@ -3,11 +3,11 @@ name = "fegis"
 authors = [
     { name = "Perry Golden", email = "goldenp@ptology.com" },
 ]
-version = "1.2.0"
-description = "FEGIS is a config-driven framework for building agents for language models leveraging model context protocol."
+version = "1.3.0"
+description = "Fegis"
 readme = "README.md"
 license = "MIT"
-requires-python = ">=3.12,<3.13"
+requires-python = ">=3.12,<=3.13.1"
 dependencies = [
     "mcp[cli]>=1.6.0",
     "qdrant-client[fastembed]>=1.12.0",

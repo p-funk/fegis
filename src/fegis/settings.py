@@ -1,9 +1,16 @@
 ﻿"""
-Settings module for FEGIS.
+Runtime configuration for Fegis system components
 
-Provides Pydantic settings classes for configuration of:
-1. Qdrant vector database connection
-2. Archetype configuration file location
+Provides Pydantic-based configuration models for two primary subsystems:
+
+1. Vector Database (QdrantSettings):
+   - Connection parameters for the Qdrant server
+   - Collection naming and authentication
+   - Embedding model configuration for trace vectorization
+
+2. Archetype Definition (ConfigSettings):
+   - Path to the YAML archetype definition file
+   - Controls which interaction model is loaded at runtime
 """
 
 from typing import Optional
@@ -35,8 +42,6 @@ class QdrantSettings(BaseSettings):
     fast_embed_model: str = Field(
         validation_alias="FAST_EMBED_MODEL",
     )
-    # Auto-ID is now always enabled
-    use_auto_id: bool = True
 
 
 class ConfigSettings(BaseSettings):
@@ -47,6 +52,6 @@ class ConfigSettings(BaseSettings):
     - CONFIG_PATH: Path to the YAML archetype definition file
     """
     config_path: str = Field(
-        default="archetypes/phenomenological.yaml",
+        default="archetypes/example.yaml",
         validation_alias="CONFIG_PATH",
     )

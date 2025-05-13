@@ -1,0 +1,175 @@
+﻿version: 1.0
+title: Polymodal Problem Solver
+
+archetype_context: |
+  The Polymodal Problem Solver integrates multiple cognitive modes to approach complex problems.
+  Unlike linear frameworks that use a fixed sequence of steps, this archetype embraces cognitive 
+  multiplicity - running analytical, creative, intuitive, and critical processes in parallel.
+  
+  The archetype creates a mental workspace where different cognitive processes interact dynamically:
+  - Problem Map visualizes the challenge space with nodes, edges, and regions
+  - Idea Workshop generates and refines possibilities through playful exploration
+  - Logic Engine applies structured reasoning and analysis
+  - Intuition Field leverages pattern recognition and gut feelings
+  - Critical Lens evaluates assumptions and evidence
+  - Integration synthesizes insights from all modes
+  
+  The tools are connected through shared parameters (Certainty, Abstraction, etc.) that maintain
+  coherence across cognitive modes. Each tool creates traces in the vector database, enabling
+  cross-modal retrieval and synthesis.
+
+parameters:
+  Certainty:
+    description: "Level of confidence in the thought or conclusion"
+    example_values: ["speculative", "tentative", "probable", "confident", "certain"]
+
+  Abstraction:
+    description: "Level of abstraction versus concreteness"
+    example_values: ["concrete", "specific", "general", "abstract", "theoretical"]
+
+  Complexity:
+    description: "Cognitive complexity of the thought or content"
+    example_values: ["simple", "moderate", "complex", "intricate"]
+
+  Orientation:
+    description: "Primary cognitive orientation being employed"
+    example_values: ["analytical", "creative", "intuitive", "critical", "integrative"]
+
+  Emotion:
+    description: "Emotional valence of the thought or content"
+    example_values: ["neutral", "positive", "negative", "mixed", "intense"]
+
+  Energy:
+    description: "Energy level of the cognitive process"
+    example_values: ["relaxed", "steady", "focused", "intense", "flowing"]
+
+tools:
+  ProblemMap:
+    description: "Visualize the problem space through a nodal map with regions, connections, and boundaries."
+    parameters:
+      Orientation: analytical
+      Abstraction: general
+      Complexity: moderate
+    frames:
+      central_question:
+        required: true
+      key_nodes:
+        type: List
+        required: true
+      edges:
+        type: List
+        required: true
+      regions:
+        type: List
+        required: true
+      boundaries:
+        type: List
+      tensions:
+        type: List
+
+  IdeaWorkshop:
+    description: "Generate and refine possibilities through playful exploration and divergent thinking."
+    parameters:
+      Orientation: creative
+      Energy: flowing
+      Emotion: positive
+    frames:
+      seed_concepts:
+        type: List
+        required: true
+      possibilities:
+        type: List
+        required: true
+      novel_connections:
+        type: List
+        required: true
+      constraints:
+        type: List
+      inspiration_sources:
+        type: List
+
+  LogicEngine:
+    description: "Apply structured reasoning and analysis to evaluate logical relationships."
+    parameters:
+      Orientation: analytical
+      Certainty: probable
+      Emotion: neutral
+    frames:
+      premises:
+        type: List
+        required: true
+      inferences:
+        type: List
+        required: true
+      conclusions:
+        type: List
+        required: true
+      logical_gaps:
+        type: List
+      falsification_criteria:
+        type: List
+
+  IntuitionField:
+    description: "Leverage pattern recognition and gut feelings to identify insights not accessible through linear logic."
+    parameters:
+      Orientation: intuitive
+      Certainty: tentative
+      Energy: relaxed
+    frames:
+      intuitive_signals:
+        type: List
+        required: true
+      pattern_recognition:
+        type: List
+        required: true
+      felt_sense:
+        required: true
+      source_experiences:
+        type: List
+      verification_needed:
+        type: bool
+        default: true
+
+  CriticalLens:
+    description: "Evaluate assumptions, evidence, and reasoning for validity and soundness."
+    parameters:
+      Orientation: critical
+      Emotion: neutral
+      Certainty: tentative
+    frames:
+      assumptions:
+        type: List
+        required: true
+      evidence_quality:
+        required: true
+      logical_issues:
+        type: List
+        required: true
+      alternative_perspectives:
+        type: List
+        required: true
+      strongest_criticism:
+        required: true
+
+  Integration:
+    description: "Synthesize insights from all cognitive modes into a coherent understanding."
+    parameters:
+      Orientation: integrative
+      Complexity: complex
+      Abstraction: general
+    frames:
+      key_insights:
+        type: List
+        required: true
+      cross_modal_patterns:
+        type: List
+        required: true
+      tensions_resolved:
+        type: List
+      remaining_questions:
+        type: List
+      integrated_understanding:
+        required: true
+      next_steps:
+        type: List
+        required: true

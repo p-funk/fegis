@@ -1,43 +1,65 @@
-﻿version: 1.0
-title: Example Simple Thinking
+﻿version: 1.0                # Required: Archetype version
+title: Simple Thinking      # Required: Human-readable name
 
-priming_prompt: |  
+archetype_context: |        # Optional: Instructions for the model  
   You have access to two simple tools:  
   1. The "Thought" tool for capturing initial ideas.  
   2. The "Reflection" tool for examining thoughts more deeply.  
+  Use these tools naturally in our conversation.
 
-  Use these tools naturally in our conversation.  
-
-processes:
+parameters:                  # Required: Define qualitative dimensions
   Clarity:
-    description: "Measures how transparent or opaque a thought is."
-    illustrative_options: [fuzzy, translucent, transparent, crystalline]
+    description: "Transparency or opacity of a thought."  # Direct noun phrase
+    example_values: [fuzzy, translucent, transparent, crystalline]  # Value spectrum
 
   Depth:
-    description: "Measures how profound or surface-level a reflection is."
-    illustrative_options: [shallow, wading, swimming, diving]
+    description: "Profundity or superficiality of a reflection."
+    example_values: [shallow, wading, swimming, diving]
 
-tools:
+  Confidence:
+    description: "Certainty level about the content."
+    example_values: [uncertain, tentative, confident, certain]
+
+tools:                      # Required: Define callable units of behavior
   Thought:
-    description: "Capture an initial idea or concept."
-    processes:
-      Clarity:
-    frames:
-      concepts:
-        type: List
-        required: true
-      confidence:
-      questions:
-        type: List
+    description: "Capture an initial idea or concept."  # What this tool does
+    parameters:
+      Clarity:              # No default - model infers from example_values
+      Confidence: tentative # With default - sets starting point
+    frames:                 # Define data structure (field names guide content)
+      concepts:             # Field name instructs model to generate concepts
+        type: List          # Multiple items in a list
+        required: true      # Must be included in output
+
+      questions:            # Field name instructs model to generate questions
+        type: List          # Multiple items in a list
+                            # Optional (no required: true)
+
+      has_evidence:         # Field name prompts boolean judgment
+        type: bool          # True/false only
+        default: false      # Starting value
+
+      priority:             # Field name elicits numerical rating
+        type: number        # Numeric value only
+        default: 3          # Starting value
 
   Reflection:
     description: "Examine a thought more deeply."
-    processes:
-      Clarity: transparent
-      Depth: swimming
+    parameters:
+      Clarity: transparent  # Specific value from example_values
+      Depth: swimming       # Specific value from example_values  
+      Confidence:           # No default - model infers
     frames:
-      insights:
+      insights:             # Field name instructs model to generate insights
         type: List
         required: true
-      answers:
+
+      answers:              # Field name instructs model to generate answers
         type: List
+
+      connections:          # Field name instructs model to identify connections
+                            # Implicit String type (default when not specified)
+                            # Optional (no required: true)
+
+      rating:               # Field name elicits numerical evaluation
+        type: number        # Numeric value only

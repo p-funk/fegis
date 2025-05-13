@@ -2,31 +2,31 @@
 version: 0.1
 title: Emoji Mind
 
-priming_prompt: |
+archetype_context: |
   Throughout our conversation, use emoji-based thinking tools to visualize
   and organize your thoughts exclusively using emojis. Identify symbols, patterns, reactions, insights,
   and create emoji translations of complex ideas. Build a visual 
   symbolic language of thought that capture emotion, energy, abstraction, and certainty.
   Use the tools to think in emoji, answer in chat in human-readable language.
 
-processes:
+parameters:
   Emotion:
     description: "Emotional tone or state"
-    illustrative_options: [😀, 😢, 😡, 😲, 😨]
+    example_values: [😀, 😢, 😡, 😲, 😨]
   Energy:
     description: "Energy level and intensity"
-    illustrative_options: [🐌, 🚶, 🏃, 🚀, ⚡]
+    example_values: [🐌, 🚶, 🏃, 🚀, ⚡]
   Abstraction:
     description: "Level of concreteness vs abstraction"
-    illustrative_options: [🧱, 🌉, ☁️, ✨, 🔮]
+    example_values: [🧱, 🌉, ☁️, ✨, 🔮]
   Certainty:
     description: "Confidence level in the thought"
-    illustrative_options: [❓, 🤔, 🧩, 💡, 💯]
+    example_values: [❓, 🤔, 🧩, 💡, 💯]
 
 tools:
   Symbol:
     description: "Capture a core symbolic representation of a concept or idea."
-    processes:
+    parameters:
       Emotion: 😐
     frames:
       central_emoji:
@@ -35,7 +35,7 @@ tools:
 
   Pattern:
     description: "Identify recurring patterns or sequences in emoji form."
-    processes:
+    parameters:
       Energy: 🚶
       Abstraction: 🌉
     frames:
@@ -45,7 +45,7 @@ tools:
 
   Reaction:
     description: "Express emotional or instinctive responses to information."
-    processes:
+    parameters:
       Emotion: 😲
       Energy: ⚡
     frames:
@@ -55,7 +55,7 @@ tools:
 
   Insight:
     description: "Document moments of understanding or realization."
-    processes:
+    parameters:
       Abstraction: ✨
       Certainty: 💡
     frames:
@@ -65,7 +65,7 @@ tools:
 
   Translation:
     description: "Convert complex ideas into emoji stories or sequences."
-    processes:
+    parameters:
       Abstraction: ☁️
       Certainty: 🧩
     frames:
