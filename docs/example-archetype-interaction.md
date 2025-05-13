@@ -12,7 +12,7 @@ I'll help you explore these cognitive tools. Let's try them out to see how they 
 
 First, let me capture an initial thought using the Thought tool:
 
-![[docs/draft/assets/thought.png]]
+![](./assets/thought.png)
 *Request*
 ```json
 {
@@ -37,7 +37,7 @@ First, let me capture an initial thought using the Thought tool:
 
 Now let me try the Reflection tool to examine this thought more deeply:
 
-![[docs/draft/assets/reflection.png]]
+![](./assets/reflection.png)
 *Request*
 ```json
 {
@@ -62,7 +62,7 @@ Now let me try the Reflection tool to examine this thought more deeply:
 
 Now let's try searching for previously stored thoughts using the search_archive tool:
 
-![[docs/draft/assets/search_archive.png]]
+![](./assets/search_archive.png)
 *Request*
 ```json
 {
@@ -80,7 +80,7 @@ Now let's try searching for previously stored thoughts using the search_archive 
 
 Finally, let's retrieve a specific trace we created earlier:
 
-![[docs/draft/assets/retrieve_trace.png]]
+![](./assets/retrieve_trace.png)
 *Request*
 ```json
 
