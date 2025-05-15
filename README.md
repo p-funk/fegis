@@ -5,7 +5,7 @@
 
 **Fegis** is a semantic tool building framework and compiler that transforms YAML specifications—called _Archetypes_—into structured, reusable tools for large language models (LLMs). Built on the Model Context Protocol (MCP), Fegis compiles each Archetype into schema-validated interfaces, where field names and parameters act as **semantic directives** that guide content generation.
 
-Every tool invocation is preserved in a hybrid memory system combining vector embeddings with structured metadata—forming an **emergent knowledge graph** that enables persistent memory, semantic retrieval, and exploration of interconnected ideas.
+Every tool invocation is preserved in a hybrid memory system combining vector embeddings with structured metadata—forming an **emergent knowledge graph** that enables persistent memory, semantic retrieval, and exploration of interconnected data.
 
 ## Core Components
 
