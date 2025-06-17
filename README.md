@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/p-funk-fegis-badge.png)](https://mseep.ai/app/p-funk-fegis)
+
 ![Fegis Banner](docs/assets/huh-banner.png)
 
 ![Built on MCP](https://img.shields.io/badge/Built%20on-MCP-white?style=flat-square&color=000000) ![Powered by Qdrant](https://img.shields.io/badge/Stored%20in-Qdrant-FF4F70?style=flat-square&logoColor=white) ![Powered by Semantics](https://img.shields.io/badge/Powered%20by-Semantics-3B82F6?style=flat-square)
