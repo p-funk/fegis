@@ -126,7 +126,7 @@ Optional environment variables:
 
 ## Requirements
 
-- Python 3.10+
+- Python 3.13+
 - uv package manager
 - Docker (for Qdrant)
 - MCP-compatible client
