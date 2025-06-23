@@ -1,104 +1,10 @@
-![Fegis Banner](docs/assets/huh-banner.png)
-
-![Built on MCP](https://img.shields.io/badge/Built%20on-MCP-white?style=flat-square&color=000000) ![Powered by Qdrant](https://img.shields.io/badge/Stored%20in-Qdrant-FF4F70?style=flat-square&logoColor=white) ![Powered by Semantics](https://img.shields.io/badge/Powered%20by-Semantics-3B82F6?style=flat-square)
 # Fegis
 
-**Fegis** is a semantic tool building framework and compiler that transforms YAML specifications—called _Archetypes_—into structured, reusable tools for large language models (LLMs). Built on the Model Context Protocol (MCP), Fegis compiles each Archetype into schema-validated interfaces, where field names and parameters act as **semantic directives** that guide content generation.
+Fegis does 3 things:
 
-Every tool invocation is preserved in a hybrid memory system combining vector embeddings with structured metadata—forming an **emergent knowledge graph** that enables persistent memory, semantic retrieval, and exploration of interconnected data.
-
-## Core Components
-
-### 1. MCP Server Implementation
-
-Fegis implements the Model Context Protocol (MCP), but unlike typical MCP servers that focus on bridging LLMs to external systems, Fegis creates **semantically rich, internally defined tools** using YAML archetypes. It extends the MCP framework by introducing parameters and frames that shape how language models understand and interact with these tools.
-
-### 2. Semantic Programming Framework
-
-Fegis introduces a practical form of semantic programming, where YAML structure acts as a scaffold for language model behavior. Instead of writing detailed prompts or procedural instructions, you define intent using meaningful field names, frames, and parameters.
-
-This approach treats **structure as code**: field names aren't just labels — they guide and constrain what the LLM generates. Parameters don't merely pass values — they shape the model's expressive space through the scaffolding they provide.
-
-### 3. Hybrid Memory System
-
-Fegis features a hybrid memory system that combines vector embeddings with structured metadata, creating a powerful, searchable history of all tool invocations. This memory functions as an emergent knowledge graph, enabling the discovery and traversal of interconnected information pathways. All embedding and memory data remains local by default, unless explicitly configured otherwise.
-
-## How LLMs Process Archetypes
-
-To understand how this works, let's look at what happens when an LLM processes the scaffolding of an Archetype:
-
-```yaml
-archetype_context: |
-  You have tools for scientific education that allow you to clearly explain complex concepts with accuracy 
-  and accessibility. Focus on making information understandable while 
-  maintaining technical precision.
-
-parameters:
-  Length:
-    description: "Level of detail and wordiness in explanations"
-    example_values: [terse, brief, moderate, comprehensive, exhaustive]
-  Tone:
-    description: "Communication style that shapes how scientific content is presented"
-    example_values: [formal, informative, conversational, enthusiastic, socratic]
-
-tools:
-  Summary:
-    description: "Create a concise summary of important information."
-    parameters:
-      Length: brief
-      Tone: informative
-    frames:
-      key_points:
-        type: List
-        required: true
-      conclusion:
-```
-
-Each element in this YAML definition serves a specific purpose:
-
-1. **The archetype_context** - Defines the conceptual space and purpose of these tools. This text can be used for documentation or injected as appropriate, documenting how these tools should be used.
-    
-2. **The parameters section** - Defines semantic dimensions that shape output:
-    
-    - Parameter name ("Length") identifies what aspect is being configured
-    - Description provides clear definition of the parameter's purpose
-    - example_values establish a spectrum of possible values ([terse...exhaustive])
-    - When used in a tool, specific values ("brief") trigger associated language patterns
-3. **The tool name "Summary"** - The model recognizes this as a tool, activating associated patterns for condensing information.
-    
-4. **The tool description** - "Create a concise summary..." sets the specific objective and purpose.
-    
-5. **The frame fields** define what content to generate:
-    
-    - Field name "key_points" guides the model to identify important elements
-    - Type constraint "List" formats output as discrete items
-    - Requirement "required: true" ensures this field will always be populated
-    - Field name "conclusion" prompts creation of a summary statement
-
-This architecture creates a structured flow where each element serves a specific purpose:
-
-```
-┌─────────────────────────────────────────────────┐
-│             YAML ↔ LLM Processing               │
-│                                                 │
-│  [Optional] archetype_context → Sets context    │
-│  parameters → Define semantic dimensions        │
-│  tool name → Identifies functional category     │
-│  description → States specific purpose          │
-│  frames → Structure and guide content creation  │
-└─────────────────────────────────────────────────┘
-```
-## Example Interaction: Cognitive Tools
-
-To see Fegis in action, check out this [example interaction with cognitive tools](./docs/example-archetype-interaction.md) that demonstrates how Thought and Reflection tools work with the memory system.
-## What Can You Build With Fegis?
-
-Fegis has been used to create:
-
-- **Thinking frameworks** that guide LLMs through complex reasoning processes
-- **Web exploration interfaces** with tools for curating and connecting content
-- **Optimization systems** inspired by biological networks
-- **Symbolic reasoning tools** using emoji as a visual language
+1. **Easy to write tools** - Write prompts in YAML format. Fegis converts them into working MCP tools.
+2. **Structured data from tool calls saved in a vector database** - Every tool use is automatically stored in Qdrant with full context.
+3. **Search** - AI can search through all previous tool usage using semantic similarity, filters, or direct lookup.
 
 ## Quick Start
 
@@ -110,52 +16,121 @@ winget install --id=astral-sh.uv -e
 # macOS/Linux
 curl -LsSf https://astral.sh/uv/install.sh | sh
 
-# Clone the repository
-git clone https://github.com/p-funk/Fegis.git
+# Clone
+git clone https://github.com/p-funk/fegis.git
 
 # Start Qdrant
 docker run -d --name qdrant -p 6333:6333 -p 6334:6334 qdrant/qdrant:latest
 ```
 
-### Configure Claude Desktop
+## Configure Claude Desktop
 
 Update `claude_desktop_config.json`:
 
 ```json
-"mcpServers": {
-  "mcp-fegis-server": {
-    "command": "uv",
-    "args": [
-      "--directory",
-      "<FEGIS_PATH>",
-      "run",
-      "fegis"
-    ],
-    "env": {
-      "QDRANT_URL": "http://localhost:6333",
-      "QDRANT_API_KEY": "",
-      "COLLECTION_NAME": "trace_archive",
-      "FAST_EMBED_MODEL": "nomic-ai/nomic-embed-text-v1.5",
-      "CONFIG_PATH": "<FEGIS_PATH>/archetypes/example.yaml"
+{
+  "mcpServers": {
+    "fegis": {
+      "command": "uv",
+      "args": [
+        "--directory",
+        "/absolute/path/to/fegis",
+        "run",
+        "fegis"
+      ],
+      "env": {
+        "QDRANT_URL": "http://localhost:6333",
+        "QDRANT_API_KEY": "",
+        "COLLECTION_NAME": "fegis_memory",
+        "EMBEDDING_MODEL": "BAAI/bge-small-en",
+        "SPARSE_EMBEDDING_MODEL": "prithivida/Splade_PP_en_v1",
+        "ARCHETYPE_PATH": "/absolute/path/to/fegis-wip/archetypes/default.yaml",
+        "AGENT_ID": "claude_desktop"
+      }
     }
   }
 }
 ```
 
-## Learn More
+Restart Claude Desktop. You'll have 7 new tools available including SearchMemory.
 
-- [Examples](./archetypes/) - Sample archetypes to get you started
+## How It Works
 
-_more docs coming soon..._
+### 1. Tools from YAML
 
+```yaml
+parameters:
+  BiasScope:
+    description: "Range of bias detection to apply"
+    examples: [confirmation, availability, anchoring, systematic, comprehensive]
+  
+  IntrospectionDepth:
+    description: "How deeply to examine internal reasoning processes"
+    examples: [surface, moderate, deep, exhaustive, meta_recursive]
+    
+tools:
+  BiasDetector:
+    description: "Identify reasoning blind spots, cognitive biases, and systematic errors in AI thinking patterns through structured self-examination"
+    parameters:
+      BiasScope:
+      IntrospectionDepth:
+    frames:
+      identified_biases:
+        type: List
+        required: true
+      reasoning_patterns:
+        type: List
+        required: true
+      alternative_perspectives:
+        type: List
+        required: true
+```
 
-## Support Development
+### 2. Automatic Memory Storage
 
-☕ [Buy me a coffee](https://ko-fi.com/perrygolden)  
-💖 [Sponsor on GitHub](https://github.com/sponsors/p-funk)
+Every tool invocation gets stored with:
+- Tool name and parameters used
+- Complete input and output
+- Timestamp and session context
+- Vector embeddings for semantic search
+
+### 3. SearchMemory Tool
+
+```
+"Use SearchMemory and find my analysis of privacy concerns"
+"Use SearchMemory and what creative ideas did I generate last week?"  
+"Use SearchMemory and show me all UncertaintyNavigator results"
+"Use SearchMemory and search for memories about decision-making"
+```
+
+## Available Archetypes
+
+- `archetypes/default.yaml` - Cognitive analysis tools (UncertaintyNavigator, BiasDetector, etc.)
+- `archetypes/simple_example.yaml` - Basic example tools
+- `archetypes/emoji_mind.yaml` - Symbolic reasoning with emojis
+- `archetypes/slime_mold.yaml` - Network optimization tools
+- `archetypes/vibe_surfer.yaml` - Web exploration tools
+
+## Configuration
+
+Required environment variables:
+- `ARCHETYPE_PATH` - Path to YAML archetype file
+- `QDRANT_URL` - Qdrant database URL (default: http://localhost:6333)
+
+Optional environment variables:
+- `COLLECTION_NAME` - Qdrant collection name (default: fegis_memory)
+- `AGENT_ID` - Identifier for this agent (default: default-agent)
+- `EMBEDDING_MODEL` - Dense embedding model (default: BAAI/bge-small-en)
+- `SPARSE_EMBEDDING_MODEL` - Sparse embedding model (default: prithivida/Splade_PP_en_v1)
+- `QDRANT_API_KEY` - API key for remote Qdrant (default: empty)
+
+## Requirements
+
+- Python 3.10+
+- uv package manager
+- Docker (for Qdrant)
+- MCP-compatible client
 
 ## License
 
-This project is licensed under the MIT License — see the LICENSE file for full details.
-
-> The MIT License is permissive and simple: Do anything you want with the code, as long as you give proper attribution and don't hold the authors liable.
+MIT License - see LICENSE file for details.

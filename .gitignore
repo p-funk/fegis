@@ -106,10 +106,8 @@ ipython_config.py
 #pdm.lock
 #   pdm stores project-wide configurations in .pdm.toml, but it is recommended to not include it
 #   in version control.
-#   https://pdm.fming.dev/latest/usage/project/#working-with-version-control
+#   https://pdm.fming.dev/#use-with-ide
 .pdm.toml
-.pdm-python
-.pdm-build/
 
 # PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
 __pypackages__/
@@ -156,11 +154,99 @@ cython_debug/
 
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
-#  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
-#  and can be added to the global gitignore or merged into this file.  For a more nuclear
-#  option (not recommended) you can uncomment the following to ignore the entire idea folder.
+#  be added to the global gitignore or merged into this project gitignore.  For a PyCharm
+#  project, it is recommended to comment the following line:
 .idea/
 
-# Project-specific settings
-.aider*
-/.obsidian/
+# Visual Studio Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+
+# Local History for Visual Studio Code
+.history/
+
+# Built Visual Studio Code Extensions
+*.vsix
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.tmp
+*.temp
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+
+# Temporary files
+*.swp
+*.swo
+*~
+
+# Log files
+*.log
+logs/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Configuration files with secrets
+.env.local
+.env.production
+.env.staging
+config.local.yaml
+secrets.yaml
+
+# Fegis specific
+# Qdrant data directory (if running locally)
+qdrant_storage/
+
+# Test output
+test_results/
+test_output/
+
+# Obsidian specific
+.obsidian/
+
+# Performance test artifacts
+*.prof
+*.pstats
+
+# Temporary archetype files
+*.tmp.yaml
+*.backup.yaml
+
+# UV lock file (optional - project uses uv)
+# uv.lock
+
+# Ruff cache
+.ruff_cache/
+
+# AI codeing assistant artifacts
+CLAUDE.md
+AGENTS.md
+
+# Working directories for documentation and testing
+guides/
+scripts/
+tests/

@@ -1,0 +1,218 @@
+"""Handles interaction with the Qdrant vector database."""
+
+from __future__ import annotations
+
+import json
+import uuid
+from datetime import datetime, timezone
+from typing import TYPE_CHECKING
+
+from loguru import logger
+from qdrant_client import AsyncQdrantClient, models
+
+if TYPE_CHECKING:
+    from .config import FegisConfig
+
+
+class QdrantStorage:
+    """Manages all communication with the Qdrant collection."""
+
+    def __init__(self, config: FegisConfig):
+        self.config = config
+        self.collection_name = config.collection_name
+        self.client = AsyncQdrantClient(
+            url=config.qdrant_url,
+            api_key=config.qdrant_api_key,
+            prefer_grpc=config.prefer_grpc,
+            grpc_port=config.grpc_port,
+        )
+
+    async def initialize(self):
+        """Sets up embedding models and ensures the collection exists."""
+        import sys
+
+        print(
+            "[INIT] Initializing Qdrant storage and embedding models...",
+            file=sys.stderr,
+        )
+
+        print(
+            f"[INIT] Setting dense embedding model: {self.config.embedding_model}",
+            file=sys.stderr,
+        )
+        self.client.set_model(self.config.embedding_model)
+        print("[OK] Dense model ready", file=sys.stderr)
+
+        print(
+            f"[INIT] Setting sparse embedding model: {self.config.sparse_embedding_model}",
+            file=sys.stderr,
+        )
+        self.client.set_sparse_model(self.config.sparse_embedding_model)
+        print("[OK] Sparse model ready", file=sys.stderr)
+
+        try:
+            exists = await self.client.collection_exists(self.collection_name)
+            if exists:
+                logger.info(f"Collection '{self.collection_name}' already exists.")
+            else:
+                logger.info(f"Creating collection '{self.collection_name}'.")
+                await self.client.create_collection(
+                    collection_name=self.collection_name,
+                    vectors_config=self.client.get_fastembed_vector_params(),
+                    sparse_vectors_config=self.client.get_fastembed_sparse_vector_params(),
+                )
+        except Exception as e:
+            logger.error(f"Error checking/creating collection: {e}")
+            raise
+        await self.ensure_indexes()
+
+    async def ensure_indexes(self):
+        """Creates indexes for the semantic-first payload structure."""
+        desired_indexes = {
+            # HUMAN-FIRST fields - for semantic and basic filtering
+            "title": models.PayloadSchemaType.TEXT,  # Full-text search capability
+            "context": models.PayloadSchemaType.TEXT,  # Full-text search capability
+            "tool": models.PayloadSchemaType.KEYWORD,
+            # RELATIONSHIP fields - for session and sequence filtering
+            "session_id": models.PayloadSchemaType.KEYWORD,
+            "sequence_order": models.PayloadSchemaType.INTEGER,
+            "memory_id": models.PayloadSchemaType.KEYWORD,
+            "timestamp": models.PayloadSchemaType.DATETIME,
+            "preceding_memory_id": models.PayloadSchemaType.KEYWORD,
+            # META fields - for system-level filtering
+            "meta.agent_id": models.PayloadSchemaType.KEYWORD,
+            "meta.archetype_title": models.PayloadSchemaType.KEYWORD,
+            "meta.archetype_version": models.PayloadSchemaType.KEYWORD,
+            "meta.schema_version": models.PayloadSchemaType.KEYWORD,
+        }
+        try:
+            collection_info = await self.client.get_collection(self.collection_name)
+            existing_indexes = (
+                set(collection_info.payload_schema.keys())
+                if collection_info.payload_schema
+                else set()
+            )
+            missing_indexes = {
+                k: v for k, v in desired_indexes.items() if k not in existing_indexes
+            }
+            if not missing_indexes:
+                logger.info("All required payload indexes are in place.")
+                return
+
+            logger.info(f"Creating missing indexes: {list(missing_indexes.keys())}")
+            for field_name, schema_type in missing_indexes.items():
+                await self.client.create_payload_index(
+                    collection_name=self.collection_name,
+                    field_name=field_name,
+                    field_schema=schema_type,
+                    wait=True,
+                )
+            logger.info("Successfully created payload indexes.")
+        except Exception as e:
+            logger.error(f"Failed to ensure indexes: {e}")
+
+    async def get_last_memory_for_session(
+        self, session_id: str
+    ) -> tuple[str | None, int]:
+        """Get the most recent memory ID and next sequence order for a given session."""
+        try:
+            # Query for memories in this session, get more records to find the max sequence
+            session_memories, _ = await self.client.scroll(
+                collection_name=self.collection_name,
+                scroll_filter=models.Filter(
+                    must=[
+                        models.FieldCondition(
+                            key="session_id", match=models.MatchValue(value=session_id)
+                        )
+                    ]
+                ),
+                limit=50,  # Get more records to find max sequence
+                with_payload=True,
+                with_vectors=False,
+            )
+
+            if session_memories:
+                # Find the memory with the highest sequence_order
+                latest_memory = max(
+                    session_memories, key=lambda x: x.payload.get("sequence_order", 0)
+                )
+                last_memory_id = latest_memory.payload.get("memory_id")
+                last_sequence_number = latest_memory.payload.get("sequence_order", 0)
+                next_sequence_number = last_sequence_number + 1
+                return last_memory_id, next_sequence_number
+
+            # No memories in this session yet
+            return None, 1
+
+        except Exception as e:
+            logger.error(f"Failed to get last memory for session {session_id}: {e}")
+            return None, 1
+
+    async def store_invocation(
+        self,
+        tool_name: str,
+        parameters: dict,
+        frames: dict,
+        archetype: dict,
+        context: dict,
+    ) -> str:
+        """Stores the result of a tool invocation and returns its new ID."""
+        # Extract standard fields from parameters for top-level storage
+        memory_title = parameters.get("Title", f"{tool_name} Invocation")
+        memory_context = parameters.get("Context", "")
+        memory_content = parameters.get("Content", "")
+
+        # Create semantic-first document content
+        document_text = (
+            memory_content or f"Tool: {tool_name}\n{json.dumps(frames, indent=2)}"
+        )
+
+        # Remove standard fields from parameters and frames to avoid duplication
+        filtered_parameters = {
+            k: v
+            for k, v in parameters.items()
+            if k not in ["Title", "Content", "Context"]
+        }
+        filtered_frames = {
+            k: v for k, v in frames.items() if k not in ["Title", "Content", "Context"]
+        }
+
+        memory_id = str(uuid.uuid4())
+
+        # SEMANTIC-FIRST payload structure per PAYLOAD_DESIGN.md
+        memory_payload = {
+            # HUMAN-FIRST: What we care about seeing
+            "title": memory_title,
+            "context": memory_context,
+            "tool": tool_name,
+            # RELATIONSHIP: How this connects to other memories
+            "session_id": context.get("session_id"),
+            "sequence_order": context.get("sequence_order", 0),
+            "memory_id": memory_id,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "preceding_memory_id": context.get("preceding_memory_id"),
+            # EXECUTION: The detailed work product (no standard field duplication)
+            "parameters": filtered_parameters,
+            "frames": filtered_frames,
+            # META: System-level metadata for filtering and identification
+            "meta": {
+                "agent_id": self.config.agent_id,
+                "schema_version": self.config.schema_version,
+                "fegis_version": self.config.fegis_version,
+                "archetype_title": archetype.get("title", "unknown"),
+                "archetype_version": archetype.get("version", "unknown"),
+            },
+        }
+
+        logger.info(f"Storing memory for tool '{tool_name}' with id '{memory_id}'")
+        await self.client.add(
+            collection_name=self.collection_name,
+            documents=[document_text],
+            metadata=[memory_payload],
+            ids=[memory_id],
+        )
+        return memory_id
+
+    async def close(self):
+        """Closes the connection to Qdrant."""
+        await self.client.close()

@@ -1,0 +1,43 @@
+version: 0.01
+title: simple_example
+
+archetype_context: |
+  A basic demonstration archetype showing simple tools for task planning and note taking.
+  Designed to be easy to understand and extend.
+
+parameters:
+  Priority:
+    description: "Task priority level"
+    examples: [ "low", "medium", "high", "urgent" ]
+  
+  Category:
+    description: "Type of task or note"
+    examples: [ "personal", "work", "project", "idea", "reminder" ]
+
+tools:
+  TaskPlanner:
+    description: "Plan and organize tasks with priority and next steps"
+    parameters:
+      Priority: medium
+      Category: work
+    frames:
+      plan:
+        required: true
+      next_steps:
+        type: List
+        required: true
+      estimated_time:
+      
+  NoteTaker:
+    description: "Capture and organize notes with categorization"
+    parameters:
+      Category: idea
+      Priority: low
+    frames:
+      summary:
+        required: true
+      key_points:
+        type: List
+        required: true
+      related_topics:
+        type: List

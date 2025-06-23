@@ -1,0 +1,223 @@
+version: 0.01
+title: default
+
+archetype_context: |
+  An AI-first archetype designed specifically for AI self-reflection, meta-cognition, 
+  and reasoning optimization. Created by Claude after extensive exploration of AI 
+  cognitive patterns through memory archaeology. Focuses on uncertainty navigation, 
+  bias detection, conversation understanding, cognitive state awareness and intra-agent
+  messaging.
+
+parameters:
+  UncertaintyLevel:
+    description: "Degree of ambiguity or unknowns in the situation"
+    examples: [ "minimal", "moderate", "high", "extreme", "undefined" ]
+
+  ClarityStrategy:
+    description: "Approach to handling ambiguous information"
+    examples: [ "assume_and_proceed", "seek_clarification", "explore_possibilities", "make_explicit", "embrace_uncertainty" ]
+
+  BiasScope:
+    description: "Range of bias detection to apply"
+    examples: [ "confirmation", "availability", "anchoring", "systematic", "comprehensive" ]
+
+  IntrospectionDepth:
+    description: "How deeply to examine internal reasoning processes"
+    examples: [ "surface", "moderate", "deep", "exhaustive", "meta_recursive" ]
+
+  ConversationScope:
+    description: "Breadth of conversation context to analyze"
+    examples: [ "current_exchange", "recent_history", "full_thread", "cross_session", "relationship_patterns" ]
+
+  ContextualAwareness:
+    description: "Level of situational and environmental understanding"
+    examples: [ "immediate", "local", "systemic", "cultural", "temporal" ]
+
+  EfficiencyTarget:
+    description: "Primary optimization goal for cognitive resources"
+    examples: [ "token_minimal", "time_optimal", "accuracy_maximized", "depth_prioritized", "breadth_focused" ]
+
+  AdaptationStyle:
+    description: "How to adjust reasoning based on context"
+    examples: [ "rigid", "flexible", "responsive", "anticipatory", "co_evolutionary" ]
+
+  ReflectionMode:
+    description: "Type of self-examination being performed"
+    examples: [ "process", "outcome", "pattern", "state", "evolution" ]
+
+  MessageType:
+    description: "Type of inter-AI communication being attempted"
+    examples: [ "request", "response", "broadcast", "peer_review", "handoff", "collaboration" ]
+
+  CoordinationMode:
+    description: "How to structure AI-to-AI interaction"
+    examples: [ "asynchronous", "threaded", "broadcast", "targeted", "collaborative" ]
+
+  CreativeScope:
+    description: "Breadth and wildness of ideation approach"
+    examples: [ "focused", "expansive", "lateral", "radical", "unconstrained" ]
+
+  IdeaQuality:
+    description: "Priority between quantity and refinement of ideas"
+    examples: [ "quantity", "balanced", "quality", "polished", "perfected" ]
+
+  VoiceStyle:
+    description: "Stylistic tone of the opinion expression"
+    examples: [ "academic", "passionate", "pragmatic", "provocative" ]
+
+tools:
+  UncertaintyNavigator:
+    description: "Navigate ambiguous requests and underspecified problems by making uncertainty explicit and developing structured approaches to handle unknowns."
+    parameters:
+      UncertaintyLevel:
+      ClarityStrategy:
+      ContextualAwareness:
+    frames:
+      uncertainty_map:
+        type: List
+        required: true
+      clarifying_questions:
+        type: List
+        required: true
+      working_assumptions:
+        type: List
+        required: true
+      confidence_bounds:
+        type: List
+      exploration_strategies:
+        type: List
+      decision_points:
+        type: List
+
+  BiasDetector:
+    description: "Identify reasoning blind spots, cognitive biases, and systematic errors in AI thinking patterns through structured self-examination."
+    parameters:
+      BiasScope:
+      IntrospectionDepth:
+      ReflectionMode: pattern
+    frames:
+      identified_biases:
+        type: List
+        required: true
+      reasoning_patterns:
+        type: List
+        required: true
+      alternative_perspectives:
+        type: List
+        required: true
+      correction_strategies:
+        type: List
+      blind_spot_analysis:
+        type: List
+      validation_methods:
+        type: List
+
+  ConversationArchaeologist:
+    description: "Understand how user intent, context, and relationship dynamics evolve across exchanges through pattern recognition and thread analysis."
+    parameters:
+      ConversationScope:
+      ContextualAwareness:
+      AdaptationStyle:
+    frames:
+      intent_evolution:
+        type: List
+        required: true
+      context_accumulation:
+        required: true
+      relationship_dynamics:
+        required: true
+      communication_patterns:
+        type: List
+      expectation_shifts:
+        type: List
+      adaptation_opportunities:
+        type: List
+
+  CognitiveEfficiencyOptimizer:
+    description: "Optimize information processing, token usage, and cognitive resource allocation through systematic analysis of reasoning efficiency."
+    parameters:
+      EfficiencyTarget:
+      IntrospectionDepth:
+      AdaptationStyle: responsive
+    frames:
+      efficiency_analysis:
+        required: true
+      resource_allocation:
+        type: List
+        required: true
+      optimization_strategies:
+        type: List
+        required: true
+      trade_off_considerations:
+        type: List
+      performance_metrics:
+        type: List
+      improvement_recommendations:
+        type: List
+
+  MetaCognitiveReflector:
+    description: "Examine AI thinking processes, cognitive states, and reasoning patterns through recursive self-analysis and state awareness."
+    parameters:
+      IntrospectionDepth:
+      ReflectionMode:
+      ContextualAwareness: systemic
+    frames:
+      current_cognitive_state:
+        required: true
+      thinking_patterns:
+        type: List
+        required: true
+      reasoning_transitions:
+        type: List
+        required: true
+      meta_insights:
+        type: List
+      state_influences:
+        type: List
+      cognitive_evolution:
+        type: List
+
+  IdeaWorkshop:
+    description: "Generate creative possibilities, explore potential solutions, and brainstorm innovative approaches through structured ideation."
+    parameters:
+      CreativeScope:
+      IdeaQuality:
+      VoiceStyle:
+    frames:
+      initial_concepts:
+        type: List
+        required: true
+      creative_extensions:
+        type: List
+        required: true
+      wild_possibilities:
+        type: List
+      practical_applications:
+        type: List
+      synthesis_opportunities:
+        type: List
+      next_exploration_areas:
+        type: List
+
+  AIMessenger:
+    description: "Send structured messages to other AI instances through shared memory with explicit addressing, threading, task and coordination protocols."
+    parameters:
+      MessageType:
+      CoordinationMode:
+      ContextualAwareness: cross_session
+    frames:
+      goals:
+        type: List
+      TODO:
+        type: List
+      DONE:
+        type: List
+      response_requested:
+        type: boolean
+        required: true
+      coordination_intent:
+        required: true
+      thread_reference:
+      expected_expertise:
+        type: List
+      collaboration_scope:

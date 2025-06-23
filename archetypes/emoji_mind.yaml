@@ -13,12 +13,15 @@ parameters:
   Emotion:
     description: "Emotional tone or state"
     example_values: [😀, 😢, 😡, 😲, 😨]
+
   Energy:
     description: "Energy level and intensity"
     example_values: [🐌, 🚶, 🏃, 🚀, ⚡]
+
   Abstraction:
     description: "Level of concreteness vs abstraction"
     example_values: [🧱, 🌉, ☁️, ✨, 🔮]
+
   Certainty:
     description: "Confidence level in the thought"
     example_values: [❓, 🤔, 🧩, 💡, 💯]
