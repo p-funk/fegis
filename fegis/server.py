@@ -1,4 +1,4 @@
-"""Fegis MCP Server - Clean implementation following simple-tool pattern."""
+"""Fegis MCP Server"""
 
 import sys
 import uuid

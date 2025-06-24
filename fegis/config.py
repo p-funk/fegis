@@ -1,8 +1,7 @@
 """Configuration management with environment variable support and type safety.
 
 This module provides the FegisConfig dataclass for managing server configuration
-loaded from environment variables. It includes comprehensive type hints and
-enums for better IDE intelligence and type checking.
+loaded from environment variables.
 """
 
 from __future__ import annotations
