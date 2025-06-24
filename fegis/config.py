@@ -58,28 +58,7 @@ class SearchToolSchema(TypedDict):
 
 @dataclass
 class FegisConfig:
-    """Configuration for Fegis server loaded from environment variables.
-
-    This class provides type-safe configuration management with intelligent
-    defaults and comprehensive validation. All configuration values can be
-    overridden via environment variables.
-
-    Args:
-        archetype_path: Path to YAML archetype file (required)
-        qdrant_url: Qdrant vector database URL
-        collection_name: Name of the Qdrant collection for memory storage
-        embedding_model: Model for dense embeddings (via FastEmbed)
-        sparse_embedding_model: Model for sparse embeddings (keyword search)
-        agent_id: Unique identifier for this agent instance
-        qdrant_api_key: API key for Qdrant authentication (if required)
-        prefer_grpc: Whether to prefer gRPC over HTTP for Qdrant connection
-        grpc_port: Port for gRPC connection to Qdrant
-        transport: MCP transport protocol to use
-        server_name: Name identifier for the MCP server
-        schema_version: Version of the memory schema format
-        fegis_version: Version of the Fegis server
-        debug: Enable debug logging and verbose output
-    """
+    """Configuration for Fegis server loaded from environment variables."""
 
     # Required configuration
     archetype_path: str

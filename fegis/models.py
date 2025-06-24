@@ -18,30 +18,25 @@ class MemoryMeta(BaseModel):
 
 
 class Memory(BaseModel):
-    """A strongly-typed representation matching PAYLOAD_DESIGN.md structure."""
+    """Memory record with structured payload and search metadata."""
 
-    # HUMAN-FIRST: What we care about seeing
     title: str
     content: str = ""  # Document content from Qdrant
     context: str = ""
     tool: str
 
-    # RELATIONSHIP: How this connects to other memories
     session_id: str
     sequence_order: int
     memory_id: str
     timestamp: datetime
     preceding_memory_id: str | None = None
 
-    # EXECUTION: The detailed work product
     parameters: dict[str, Any] = Field(default_factory=dict)
     frames: dict[str, Any] = Field(default_factory=dict)
 
-    # META: System-level metadata for filtering and identification
     meta: MemoryMeta
 
-    # SEARCH-ADDED: Fields added during search retrieval (not stored in payload)
-    id: str | None = None  # Qdrant point ID (typically same as memory_id)
+    id: str | None = None  # Qdrant point ID (same as memory_id)
     score: float | None = None  # Search relevance score
 
     model_config = ConfigDict(from_attributes=True)

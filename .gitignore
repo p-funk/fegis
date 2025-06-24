@@ -245,8 +245,14 @@ test_output/
 # AI codeing assistant artifacts
 CLAUDE.md
 AGENTS.md
+.claude/
+.mcp.json
+FAQ.md
+conftest.py
+
 
 # Working directories for documentation and testing
 guides/
 scripts/
 tests/
+docs/

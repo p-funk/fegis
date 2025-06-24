@@ -8,18 +8,18 @@ validation via Pydantic models.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any, TypeAlias
+from typing import Any
 
 import yaml
 from loguru import logger
 
 # Type aliases for better IDE intelligence
-ArchetypeData: TypeAlias = dict[str, Any]
-ToolSchema: TypeAlias = dict[str, Any]
-ToolSchemas: TypeAlias = dict[str, ToolSchema]
-ParameterDefinition: TypeAlias = dict[str, Any]
-ParameterDefinitions: TypeAlias = dict[str, ParameterDefinition]
-ValidationResult: TypeAlias = tuple[dict[str, Any], list[str]]
+type ArchetypeData = dict[str, Any]
+type ToolSchema = dict[str, Any]
+type ToolSchemas = dict[str, ToolSchema]
+type ParameterDefinition = dict[str, Any]
+type ParameterDefinitions = dict[str, ParameterDefinition]
+type ValidationResult = tuple[dict[str, Any], list[str]]
 
 __all__ = [
     "load_archetype",
@@ -50,25 +50,14 @@ KEY_STRING = "string"
 # --- Standard Fields Configuration ---
 STANDARD_FIELDS = ["Title", "Content", "Context"]
 STANDARD_FIELD_DESCRIPTIONS = {
-    "Title": "A clear, descriptive title for this structured response",
-    "Content": "The main content or output of the prompt execution",
+    "Title": "A clear, descriptive title",
+    "Content": "The main content",
     "Context": "Relevant context that informed this response",
 }
 
 
 def load_archetype(path: str) -> ArchetypeData:
-    """Load and validate a YAML archetype from file.
-
-    Args:
-        path: File system path to the YAML archetype file
-
-    Returns:
-        Parsed archetype data as a dictionary
-
-    Raises:
-        FileNotFoundError: If the archetype file doesn't exist
-        yaml.YAMLError: If the YAML file is malformed
-    """
+    """Load YAML archetype from file."""
     logger.info(f"Loading archetype from: {path}")
     filepath = Path(path)
 
@@ -80,14 +69,7 @@ def load_archetype(path: str) -> ArchetypeData:
 
 
 def create_tool_schemas(archetype_data: ArchetypeData) -> ToolSchemas:
-    """Create MCP-compliant tool schemas from YAML archetype definition.
-
-    Args:
-        archetype_data: Parsed YAML archetype containing tools and parameters
-
-    Returns:
-        Dictionary mapping tool names to their MCP schema definitions
-    """
+    """Create MCP tool schemas from archetype definition."""
     tool_schemas = {}
     global_parameter_definitions = archetype_data.get(KEY_PARAMETERS, {})
     archetype_tools = archetype_data.get(KEY_TOOLS, {})
@@ -98,7 +80,6 @@ def create_tool_schemas(archetype_data: ArchetypeData) -> ToolSchemas:
         schema_properties = {}
         required_fields = []
 
-        # Standard Field Integration - Every tool inherits these
         for standard_field_name in STANDARD_FIELDS:
             schema_properties[standard_field_name] = {
                 KEY_TYPE: KEY_STRING,
@@ -109,7 +90,6 @@ def create_tool_schemas(archetype_data: ArchetypeData) -> ToolSchemas:
             }
             required_fields.append(standard_field_name)
 
-        # Three-Layer Parameter Architecture
         tool_specific_params = tool_definition.get(KEY_PARAMETERS, {})
         parameter_properties, parameter_required_fields = _process_parameters(
             tool_specific_params, global_parameter_definitions, tool_name
@@ -117,15 +97,12 @@ def create_tool_schemas(archetype_data: ArchetypeData) -> ToolSchemas:
         schema_properties.update(parameter_properties)
         required_fields.extend(parameter_required_fields)
 
-        # Structured Output Frames - Prompt scaffolding
         output_frames = tool_definition.get("frames", {})
         frame_properties, frame_required_fields = _process_frames(
             output_frames, tool_name
         )
         schema_properties.update(frame_properties)
         required_fields.extend(frame_required_fields)
-
-        # Assemble final schema
         tool_schemas[tool_name] = {
             KEY_NAME: tool_name,
             KEY_DESCRIPTION: tool_definition.get(KEY_DESCRIPTION, f"Tool: {tool_name}"),
@@ -145,16 +122,7 @@ def _process_parameters(
     global_parameter_definitions: ParameterDefinitions,
     tool_name: str,
 ) -> ValidationResult:
-    """Process parameters with three-layer binding: open, defaulted, or hidden.
-
-    Args:
-        tool_specific_params: Tool-specific parameter configurations
-        global_parameter_definitions: Global parameter pool definitions
-        tool_name: Name of the tool being processed (for logging)
-
-    Returns:
-        Tuple of (parameter properties dict, required parameter names list)
-    """
+    """Process parameters: null = required, string = optional with default."""
     parameter_properties = {}
     required_parameters = []
 
@@ -175,18 +143,18 @@ def _process_parameters(
         if KEY_EXAMPLES in global_param_definition:
             parameter_property[KEY_EXAMPLES] = global_param_definition[KEY_EXAMPLES]
 
-        # Three-layer parameter binding: open, defaulted, or hidden
         if param_binding_value is None:
-            # Open: user must provide value
+            # Required: model must provide value
             parameter_property[KEY_X_REQUIRED] = True
             required_parameters.append(param_name)
         elif isinstance(param_binding_value, str) and param_binding_value:
-            # Defaulted: has default but visible to user
+            # Default: has default seed value but model can override
             parameter_property[KEY_DEFAULT] = param_binding_value
             parameter_property[KEY_X_REQUIRED] = True
             required_parameters.append(param_name)
-        # Hidden: not exposed in schema (skip)
         else:
+            # Invalid parameter value - skip
+            logger.warning(f"Invalid parameter value for '{param_name}' in tool '{tool_name}': {param_binding_value}. Skipping.")
             continue
 
         parameter_properties[param_name] = parameter_property

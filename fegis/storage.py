@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 from loguru import logger
@@ -69,17 +69,14 @@ class QdrantStorage:
     async def ensure_indexes(self):
         """Creates indexes for the semantic-first payload structure."""
         desired_indexes = {
-            # HUMAN-FIRST fields - for semantic and basic filtering
-            "title": models.PayloadSchemaType.TEXT,  # Full-text search capability
-            "context": models.PayloadSchemaType.TEXT,  # Full-text search capability
+            "title": models.PayloadSchemaType.TEXT,
+            "context": models.PayloadSchemaType.TEXT,
             "tool": models.PayloadSchemaType.KEYWORD,
-            # RELATIONSHIP fields - for session and sequence filtering
             "session_id": models.PayloadSchemaType.KEYWORD,
             "sequence_order": models.PayloadSchemaType.INTEGER,
             "memory_id": models.PayloadSchemaType.KEYWORD,
             "timestamp": models.PayloadSchemaType.DATETIME,
             "preceding_memory_id": models.PayloadSchemaType.KEYWORD,
-            # META fields - for system-level filtering
             "meta.agent_id": models.PayloadSchemaType.KEYWORD,
             "meta.archetype_title": models.PayloadSchemaType.KEYWORD,
             "meta.archetype_version": models.PayloadSchemaType.KEYWORD,
@@ -157,17 +154,14 @@ class QdrantStorage:
         context: dict,
     ) -> str:
         """Stores the result of a tool invocation and returns its new ID."""
-        # Extract standard fields from parameters for top-level storage
         memory_title = parameters.get("Title", f"{tool_name} Invocation")
         memory_context = parameters.get("Context", "")
         memory_content = parameters.get("Content", "")
 
-        # Create semantic-first document content
         document_text = (
             memory_content or f"Tool: {tool_name}\n{json.dumps(frames, indent=2)}"
         )
 
-        # Remove standard fields from parameters and frames to avoid duplication
         filtered_parameters = {
             k: v
             for k, v in parameters.items()
@@ -179,22 +173,17 @@ class QdrantStorage:
 
         memory_id = str(uuid.uuid4())
 
-        # SEMANTIC-FIRST payload structure per PAYLOAD_DESIGN.md
         memory_payload = {
-            # HUMAN-FIRST: What we care about seeing
             "title": memory_title,
             "context": memory_context,
             "tool": tool_name,
-            # RELATIONSHIP: How this connects to other memories
             "session_id": context.get("session_id"),
             "sequence_order": context.get("sequence_order", 0),
             "memory_id": memory_id,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "preceding_memory_id": context.get("preceding_memory_id"),
-            # EXECUTION: The detailed work product (no standard field duplication)
             "parameters": filtered_parameters,
             "frames": filtered_frames,
-            # META: System-level metadata for filtering and identification
             "meta": {
                 "agent_id": self.config.agent_id,
                 "schema_version": self.config.schema_version,

@@ -4,14 +4,11 @@ from __future__ import annotations
 
 import json
 import re
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from ..models import Memory
 
-# Constants for post-processing defaults
 CONTENT_PREVIEW_LENGTH = 150
-
-# Simple view configurations - all fields treated equally
 RESULT_VIEWS = {
     "compact": {"fields": ["id", "title", "tool", "context", "score"]},
     "summary": {
@@ -62,18 +59,8 @@ RESULT_VIEWS = {
 }
 
 
-def format_memories(
-    memories: list[Memory], view_name: str
-) -> str:  # <-- Updated input type
-    """Simple formatter that works directly with memory objects.
-
-    Args:
-        memories: List of memory objects
-        view_name: Name of the view configuration to use
-
-    Returns:
-        JSON string of formatted results
-    """
+def format_memories(memories: list[Memory], view_name: str) -> str:
+    """Format memories according to view configuration."""
     view_config = RESULT_VIEWS.get(view_name)
     if not view_config:
         raise ValueError(
@@ -85,34 +72,26 @@ def format_memories(
     for memory in memories:
         result = {}
 
-        # Extract all requested fields (both direct and computed)
         for field in view_config["fields"]:
             if field == "content_preview":
-                # Computed field: generate preview from content
                 result[field] = format_content_preview(
                     memory.content, CONTENT_PREVIEW_LENGTH
                 )
             elif field == "relative_time":
-                # Computed field: generate relative time from timestamp
                 result[field] = format_relative_time(memory.timestamp)
             elif "." in field:
-                # Nested field: handle dot notation like "meta.agent_id"
                 value = _get_nested_field(memory, field)
                 result[field] = value
             else:
-                # Direct field: get from memory object
                 value = getattr(memory, field, None)
-                # Handle different types for JSON serialization
                 if isinstance(value, datetime):
                     value = value.isoformat()
                 elif hasattr(value, "model_dump"):
-                    # Handle nested Pydantic models (like MemoryMeta)
                     value = value.model_dump()
                 result[field] = value
 
         results.append(result)
 
-    # Custom JSON encoder to handle datetime objects if any slip through
     class DateTimeEncoder(json.JSONEncoder):
         def default(self, obj):
             if isinstance(obj, datetime):
@@ -122,11 +101,8 @@ def format_memories(
     return json.dumps(results, indent=2, cls=DateTimeEncoder)
 
 
-# Utility functions for formatting memory data
-
-
 def _get_nested_field(obj: Memory, field_path: str) -> any:
-    """Get nested field value using dot notation (e.g., 'meta.agent_id')."""
+    """Get nested field value using dot notation."""
     parts = field_path.split(".")
     value = obj
 
@@ -136,7 +112,6 @@ def _get_nested_field(obj: Memory, field_path: str) -> any:
         else:
             return None
 
-    # Handle datetime and Pydantic model serialization
     if isinstance(value, datetime):
         return value.isoformat()
     elif hasattr(value, "model_dump"):
@@ -147,9 +122,9 @@ def _get_nested_field(obj: Memory, field_path: str) -> any:
 
 def format_relative_time(timestamp: datetime) -> str:
     """Convert timestamp to human-readable relative time."""
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     if timestamp.tzinfo is None:
-        timestamp = timestamp.replace(tzinfo=timezone.utc)
+        timestamp = timestamp.replace(tzinfo=UTC)
 
     diff = now - timestamp
 
