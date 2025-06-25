@@ -2,11 +2,12 @@
 
 This module provides the core functionality for transforming structured YAML archetype
 configurations into validated MCP tool schemas with proper type checking and runtime
-validation via Pydantic models.
+validation via fastjsonschema.
 """
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -68,6 +69,15 @@ def load_archetype(path: str) -> ArchetypeData:
         return yaml.safe_load(f)
 
 
+def create_tool_validators(tool_schemas: ToolSchemas) -> dict[str, Callable[[dict[str, Any]], dict[str, Any]]]:
+    """Compile tool schemas into fast validation functions."""
+    import fastjsonschema
+    validators = {}
+    for tool_name, schema in tool_schemas.items():
+        validators[tool_name] = fastjsonschema.compile(schema["inputSchema"])
+    return validators
+
+
 def create_tool_schemas(archetype_data: ArchetypeData) -> ToolSchemas:
     """Create MCP tool schemas from archetype definition."""
     tool_schemas = {}
@@ -97,9 +107,9 @@ def create_tool_schemas(archetype_data: ArchetypeData) -> ToolSchemas:
         schema_properties.update(parameter_properties)
         required_fields.extend(parameter_required_fields)
 
-        output_frames = tool_definition.get("frames", {})
+        frame_definitions = tool_definition.get("frames", {})
         frame_properties, frame_required_fields = _process_frames(
-            output_frames, tool_name
+            frame_definitions, tool_name
         )
         schema_properties.update(frame_properties)
         required_fields.extend(frame_required_fields)
@@ -162,11 +172,11 @@ def _process_parameters(
     return parameter_properties, required_parameters
 
 
-def _process_frames(output_frames: dict[str, Any], tool_name: str) -> ValidationResult:
-    """Process output frames for structured prompt scaffolding.
+def _process_frames(frame_definitions: dict[str, Any], tool_name: str) -> ValidationResult:
+    """Process frame definitions for structured prompt scaffolding.
 
     Args:
-        output_frames: Frame definitions from the tool configuration
+        frame_definitions: Frame definitions from the tool configuration
         tool_name: Name of the tool being processed (for logging)
 
     Returns:
@@ -185,7 +195,7 @@ def _process_frames(output_frames: dict[str, Any], tool_name: str) -> Validation
         "object": "object",
     }
 
-    for frame_name, frame_definition in output_frames.items():
+    for frame_name, frame_definition in frame_definitions.items():
         # Handle cases where frame_definition might be None or empty
         frame_definition = (
             frame_definition if isinstance(frame_definition, dict) else {}

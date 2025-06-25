@@ -6,7 +6,6 @@ from typing import TYPE_CHECKING, Any
 
 from loguru import logger
 
-from ..models import Memory  # <-- Import the new model
 from .strategies import (
     ByIdSearchStrategy,
     DefaultSearchStrategy,
@@ -19,7 +18,7 @@ if TYPE_CHECKING:
 
 
 class SearchHandler:
-    """Dispatch search requests to the proper strategy and return ``Memory`` objects."""
+    """Dispatch search requests to the proper strategy and return memory dictionaries."""
 
     def __init__(self, storage: QdrantStorage):
         self._strategies: dict[str, SearchStrategy] = {
@@ -30,8 +29,8 @@ class SearchHandler:
 
     async def search(
         self, params: dict[str, Any]
-    ) -> list[Memory]:  # <-- Updated return type
-        """Executes a search and returns a list of memory objects."""
+    ) -> list[dict[str, Any]]:
+        """Executes a search and returns a list of memory dictionaries."""
         # Validate query for search types that require it
         search_type = params["search_type"]
         query = params["query"]
@@ -51,17 +50,17 @@ class SearchHandler:
 
         memories = []
         for point in scored_points:
-            memory = self._to_memory(point)
-            if memory is not None and memory.score >= score_threshold:
-                memories.append(memory)
+            memory_dict = self._to_memory_dict(point)
+            if memory_dict is not None and memory_dict["score"] >= score_threshold:
+                memories.append(memory_dict)
 
         logger.info(
             f"Filtered {len(memories)} results above score threshold {score_threshold}"
         )
         return memories
 
-    def _to_memory(self, point: Any) -> Memory | None:
-        """Convert various Qdrant response objects to ``Memory`` instances."""
+    def _to_memory_dict(self, point: Any) -> dict[str, Any] | None:
+        """Convert various Qdrant response objects to memory dictionaries."""
         if hasattr(point, "metadata"):
             payload = point.metadata
             content = point.document or ""
@@ -77,10 +76,4 @@ class SearchHandler:
         if not payload:
             return None
 
-        data = {"id": point.id, "score": score, "content": content, **payload}
-
-        try:
-            return Memory.model_validate(data)
-        except Exception as e:  # pragma: no cover - validation edge cases
-            logger.error(f"Failed to validate memory object with id {point.id}: {e}")
-            return None
+        return {"id": point.id, "score": score, "content": content, **payload}

@@ -6,7 +6,6 @@ import json
 import re
 from datetime import UTC, datetime
 
-from ..models import Memory
 
 CONTENT_PREVIEW_LENGTH = 150
 RESULT_VIEWS = {
@@ -59,8 +58,8 @@ RESULT_VIEWS = {
 }
 
 
-def format_memories(memories: list[Memory], view_name: str) -> str:
-    """Format memories according to view configuration."""
+def format_memories(memories: list[dict[str, any]], view_name: str) -> str:
+    """Format memory dictionaries according to view configuration."""
     view_config = RESULT_VIEWS.get(view_name)
     if not view_config:
         raise ValueError(
@@ -74,20 +73,25 @@ def format_memories(memories: list[Memory], view_name: str) -> str:
 
         for field in view_config["fields"]:
             if field == "content_preview":
-                result[field] = format_content_preview(
-                    memory.content, CONTENT_PREVIEW_LENGTH
-                )
+                content = memory.get("content", "")
+                result[field] = format_content_preview(content, CONTENT_PREVIEW_LENGTH)
             elif field == "relative_time":
-                result[field] = format_relative_time(memory.timestamp)
+                timestamp_str = memory.get("timestamp", "")
+                if timestamp_str:
+                    try:
+                        timestamp = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
+                        result[field] = format_relative_time(timestamp)
+                    except (ValueError, AttributeError):
+                        result[field] = timestamp_str
+                else:
+                    result[field] = ""
             elif "." in field:
-                value = _get_nested_field(memory, field)
+                value = _get_nested_field_dict(memory, field)
                 result[field] = value
             else:
-                value = getattr(memory, field, None)
+                value = memory.get(field)
                 if isinstance(value, datetime):
                     value = value.isoformat()
-                elif hasattr(value, "model_dump"):
-                    value = value.model_dump()
                 result[field] = value
 
         results.append(result)
@@ -101,21 +105,19 @@ def format_memories(memories: list[Memory], view_name: str) -> str:
     return json.dumps(results, indent=2, cls=DateTimeEncoder)
 
 
-def _get_nested_field(obj: Memory, field_path: str) -> any:
-    """Get nested field value using dot notation."""
+def _get_nested_field_dict(obj: dict[str, any], field_path: str) -> any:
+    """Get nested field value using dot notation from dictionary."""
     parts = field_path.split(".")
     value = obj
 
     for part in parts:
-        if hasattr(value, part):
-            value = getattr(value, part)
+        if isinstance(value, dict) and part in value:
+            value = value[part]
         else:
             return None
 
     if isinstance(value, datetime):
         return value.isoformat()
-    elif hasattr(value, "model_dump"):
-        return value.model_dump()
 
     return value
 

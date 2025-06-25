@@ -193,7 +193,7 @@ class QdrantStorage:
             },
         }
 
-        logger.info(f"Storing memory for tool '{tool_name}' with id '{memory_id}'")
+        logger.info(f"'{tool_name}' stored with memory_id '{memory_id}'")
         await self.client.add(
             collection_name=self.collection_name,
             documents=[document_text],

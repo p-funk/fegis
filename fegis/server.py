@@ -1,5 +1,6 @@
 """Fegis MCP Server"""
 
+import json
 import sys
 import uuid
 
@@ -10,7 +11,12 @@ from mcp.server.lowlevel import Server
 from mcp.server.models import InitializationOptions, ServerCapabilities
 
 from .config import FegisConfig
-from .schema import STANDARD_FIELDS, create_tool_schemas, load_archetype
+from .schema import (
+    STANDARD_FIELDS,
+    create_tool_schemas,
+    create_tool_validators,
+    load_archetype,
+)
 from .search import SearchHandler
 from .storage import QdrantStorage
 
@@ -37,6 +43,7 @@ def main() -> int:
     try:
         archetype_data = load_archetype(config.archetype_path)
         tool_schemas = create_tool_schemas(archetype_data)
+        tool_validators = create_tool_validators(tool_schemas)
         print(
             f"[OK] Loaded archetype: {archetype_data.get('title', 'Unknown')}",
             file=sys.stderr,
@@ -84,7 +91,6 @@ def main() -> int:
     @mcp_server.call_tool()
     async def call_tool(name: str, arguments: dict) -> list[types.TextContent]:
         """Handle tool calls."""
-        import json
 
         nonlocal storage
 
@@ -100,7 +106,7 @@ def main() -> int:
                     "query": arguments.get("query", ""),
                     "limit": arguments.get("limit", 3),
                     "search_type": arguments.get("search_type", "default"),
-                    "result_view": arguments.get("detail", "summary"),
+                    "detail": arguments.get("detail", "summary"),
                     "score_threshold": arguments.get("score_threshold", 0.4),
                     "filters": arguments.get("filters", []),
                 }
@@ -110,7 +116,7 @@ def main() -> int:
                 from .search.formatters import format_memories
 
                 formatted_results = format_memories(
-                    found_memories, search_args["result_view"]
+                    found_memories, search_args["detail"]
                 )
 
                 search_result = {"search_results": formatted_results}
@@ -119,18 +125,35 @@ def main() -> int:
                 tool_definition = archetype_data["tools"][name]
 
                 # Extract parameters (tool-specific parameters + standard fields)
-                tool_specific_params = set(tool_definition.get("parameters", {}).keys())
-                all_parameter_keys = tool_specific_params | set(STANDARD_FIELDS)
+                tool_parameter_keys = set(tool_definition.get("parameters", {}).keys())
+                all_parameter_keys = tool_parameter_keys | set(STANDARD_FIELDS)
 
-                input_parameters = {
+                parameters = {
                     k: v for k, v in arguments.items() if k in all_parameter_keys
                 }
 
-                # Extract frames (output structure fields)
+                # Extract frames (structured output fields)
                 frame_field_keys = set(tool_definition.get("frames", {}).keys())
-                output_frames = {
+                frames = {
                     k: v for k, v in arguments.items() if k in frame_field_keys
                 }
+
+                # Validate complete AI response against tool schema
+                complete_response = {**parameters, **frames}
+                try:
+                    tool_validators[name](complete_response)
+                except Exception as e:
+                    # Return validation error for AI auto-correction
+                    validation_error = {
+                        "error": "Tool validation failed",
+                        "message": f"{str(e)}\nPlease correct the errors and retry."
+                    }
+                    return [
+                        types.TextContent(
+                            type="text",
+                            text=json.dumps(validation_error, indent=2)
+                        )
+                    ]
 
                 # Get the last memory ID and next sequence order for this session
                 (
@@ -146,8 +169,8 @@ def main() -> int:
 
                 memory_id = await storage.store_invocation(
                     tool_name=name,
-                    parameters=input_parameters,
-                    frames=output_frames,
+                    parameters=parameters,
+                    frames=frames,
                     archetype=archetype_data,
                     context=tool_context,
                 )
