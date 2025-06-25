@@ -2,7 +2,7 @@
 
 Fegis does 3 things:
 
-1. **Easy to write tools** - Write prompts in YAML format. Fegis converts them into working MCP tools.
+1. **Easy to write tools** - Write prompts in YAML format. Tool schemas use flexible natural language instructions.
 2. **Structured data from tool calls saved in a vector database** - Every tool use is automatically stored in Qdrant with full context.
 3. **Search** - AI can search through all previous tool usage using semantic similarity, filters, or direct lookup.
 
