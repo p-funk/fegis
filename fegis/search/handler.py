@@ -27,9 +27,7 @@ class SearchHandler:
             "by_id": ByIdSearchStrategy(storage),
         }
 
-    async def search(
-        self, params: dict[str, Any]
-    ) -> list[dict[str, Any]]:
+    async def search(self, params: dict[str, Any]) -> list[dict[str, Any]]:
         """Executes a search and returns a list of memory dictionaries."""
         # Validate query for search types that require it
         search_type = params["search_type"]

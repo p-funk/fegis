@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-import json
 import re
 from datetime import UTC, datetime
+from typing import Any
 
 CONTENT_PREVIEW_LENGTH = 150
 RESULT_VIEWS = {
@@ -57,7 +57,7 @@ RESULT_VIEWS = {
 }
 
 
-def format_memories(memories: list[dict[str, any]], view_name: str) -> str:
+def format_memories(memories: list[dict[str, Any]], view_name: str) -> list[dict[str, Any]]:
     """Format memory dictionaries according to view configuration."""
     view_config = RESULT_VIEWS.get(view_name)
     if not view_config:
@@ -78,7 +78,9 @@ def format_memories(memories: list[dict[str, any]], view_name: str) -> str:
                 timestamp_str = memory.get("timestamp", "")
                 if timestamp_str:
                     try:
-                        timestamp = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
+                        timestamp = datetime.fromisoformat(
+                            timestamp_str.replace("Z", "+00:00")
+                        )
                         result[field] = format_relative_time(timestamp)
                     except (ValueError, AttributeError):
                         result[field] = timestamp_str
@@ -95,16 +97,10 @@ def format_memories(memories: list[dict[str, any]], view_name: str) -> str:
 
         results.append(result)
 
-    class DateTimeEncoder(json.JSONEncoder):
-        def default(self, obj):
-            if isinstance(obj, datetime):
-                return obj.isoformat()
-            return super().default(obj)
-
-    return json.dumps(results, indent=2, cls=DateTimeEncoder)
+    return results
 
 
-def _get_nested_field_dict(obj: dict[str, any], field_path: str) -> any:
+def _get_nested_field_dict(obj: dict[str, Any], field_path: str) -> Any:
     """Get nested field value using dot notation from dictionary."""
     parts = field_path.split(".")
     value = obj

@@ -134,9 +134,7 @@ def main() -> int:
 
                 # Extract frames (structured output fields)
                 frame_field_keys = set(tool_definition.get("frames", {}).keys())
-                frames = {
-                    k: v for k, v in arguments.items() if k in frame_field_keys
-                }
+                frames = {k: v for k, v in arguments.items() if k in frame_field_keys}
 
                 # Validate complete AI response against tool schema
                 complete_response = {**parameters, **frames}
@@ -146,12 +144,11 @@ def main() -> int:
                     # Return validation error for AI auto-correction
                     validation_error = {
                         "error": "Tool validation failed",
-                        "message": f"{str(e)}\nPlease correct the errors and retry."
+                        "message": f"{str(e)}\nPlease correct the errors and retry.",
                     }
                     return [
                         types.TextContent(
-                            type="text",
-                            text=json.dumps(validation_error, indent=2)
+                            type="text", text=json.dumps(validation_error, indent=2)
                         )
                     ]
 

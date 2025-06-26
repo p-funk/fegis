@@ -69,9 +69,12 @@ def load_archetype(path: str) -> ArchetypeData:
         return yaml.safe_load(f)
 
 
-def create_tool_validators(tool_schemas: ToolSchemas) -> dict[str, Callable[[dict[str, Any]], dict[str, Any]]]:
+def create_tool_validators(
+    tool_schemas: ToolSchemas,
+) -> dict[str, Callable[[dict[str, Any]], dict[str, Any]]]:
     """Compile tool schemas into fast validation functions."""
     import fastjsonschema
+
     validators = {}
     for tool_name, schema in tool_schemas.items():
         validators[tool_name] = fastjsonschema.compile(schema["inputSchema"])
@@ -164,7 +167,9 @@ def _process_parameters(
             required_parameters.append(param_name)
         else:
             # Invalid parameter value - skip
-            logger.warning(f"Invalid parameter value for '{param_name}' in tool '{tool_name}': {param_binding_value}. Skipping.")
+            logger.warning(
+                f"Invalid parameter value for '{param_name}' in tool '{tool_name}': {param_binding_value}. Skipping."
+            )
             continue
 
         parameter_properties[param_name] = parameter_property
@@ -172,7 +177,9 @@ def _process_parameters(
     return parameter_properties, required_parameters
 
 
-def _process_frames(frame_definitions: dict[str, Any], tool_name: str) -> ValidationResult:
+def _process_frames(
+    frame_definitions: dict[str, Any], tool_name: str
+) -> ValidationResult:
     """Process frame definitions for structured prompt scaffolding.
 
     Args:
