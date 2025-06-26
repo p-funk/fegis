@@ -71,10 +71,15 @@ def format_search_results(obj, full_output=False):
                 print()
 
 
-def format_new_search_results(search_results_str, query_from_call, full_output=False):
+def format_new_search_results(search_results, query_from_call, full_output=False):
     """Format search results from the new component-based system."""
     try:
-        results = json.loads(search_results_str)
+        # Handle both JSON string and already parsed objects
+        if isinstance(search_results, str):
+            results = json.loads(search_results)
+        else:
+            results = search_results
+
         # Try to extract query from first result if available
         if not query_from_call or query_from_call == "<no query>":
             if results and isinstance(results, list) and len(results) > 0:
@@ -96,9 +101,9 @@ def format_new_search_results(search_results_str, query_from_call, full_output=F
                     print(f"     {k}: {_pretty(v, full_output=full_output)}")
                 if idx != len(results):
                     print()
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, TypeError):
         print(
-            f"📋 SEARCH RESPONSE: {_pretty(search_results_str, full_output=full_output)}"
+            f"📋 SEARCH RESPONSE: {_pretty(search_results, full_output=full_output)}"
         )
 
 
