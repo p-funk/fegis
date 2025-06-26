@@ -6,7 +6,6 @@ import json
 import re
 from datetime import UTC, datetime
 
-
 CONTENT_PREVIEW_LENGTH = 150
 RESULT_VIEWS = {
     "compact": {"fields": ["id", "title", "tool", "context", "score"]},
