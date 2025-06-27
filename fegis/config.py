@@ -16,8 +16,6 @@ from typing_extensions import TypedDict
 __all__ = [
     "FegisConfig",
     "TransportType",
-    "SearchType",
-    "ResultView",
     "SearchToolSchema",
 ]
 
@@ -28,23 +26,6 @@ class TransportType(str, Enum):
     STDIO = "stdio"
     HTTP = "http"
     WEBSOCKET = "websocket"
-
-
-class SearchType(str, Enum):
-    """Available search strategies."""
-
-    DEFAULT = "default"
-    FILTERED = "filtered"
-    BY_ID = "by_id"
-
-
-class ResultView(str, Enum):
-    """Available result view formats."""
-
-    COMPACT = "compact"
-    SUMMARY = "summary"
-    GRAPH = "graph"
-    FULL = "full"
 
 
 class SearchToolSchema(TypedDict):
@@ -80,7 +61,7 @@ class FegisConfig:
     # Built-in search tool schema, as defined in the documentation
     SEARCH_TOOL: ClassVar[SearchToolSchema] = {
         "name": "SearchMemory",
-        "description": "Search your stored memories using semantic search.\n\nThree search types available: default (semantic), filtered (by criteria), by_id (specific UUID).\n\nFour result views: compact (essential fields), summary (browseable preview), graph (relational metadata network), full (complete memory with metadata).",
+        "description": "Search your stored memories using semantic search.\n\nThree search types available: basic (semantic), filtered (by criteria), by_memory_id (specific memory UUID).\n\nFour result views: compact (essential fields), summary (browseable preview), graph (relational metadata network), full (complete memory with metadata).",
         "inputSchema": {
             "type": "object",
             "properties": {
@@ -98,9 +79,9 @@ class FegisConfig:
                 },
                 "search_type": {
                     "type": "string",
-                    "enum": ["default", "filtered", "by_id"],
+                    "enum": ["basic", "filtered", "by_memory_id"],
                     "description": "Recall strategy.",
-                    "default": "default",
+                    "default": "basic",
                 },
                 "filters": {
                     "type": "array",

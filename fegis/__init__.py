@@ -20,14 +20,17 @@ Example:
 Architecture:
     YAML Archetype → fastjsonschema → MCP Tools → Memory Storage → Strategy-Based Search
 
-For more information, see the CLAUDE.md file in the repository root.
 """
 
 from __future__ import annotations
 
 from .config import FegisConfig
+from .storage import QdrantStorage
+from .search import SearchHandler
 
 __version__ = "2.0.0"
 __all__ = [
     "FegisConfig",
+    "QdrantStorage", 
+    "SearchHandler",
 ]

@@ -7,8 +7,8 @@ from typing import TYPE_CHECKING, Any
 from loguru import logger
 
 from .strategies import (
+    BasicSearchStrategy,
     ByIdSearchStrategy,
-    DefaultSearchStrategy,
     FilteredSearchStrategy,
     SearchStrategy,
 )
@@ -16,15 +16,17 @@ from .strategies import (
 if TYPE_CHECKING:
     from fegis.storage import QdrantStorage
 
+__all__ = ["SearchHandler"]
+
 
 class SearchHandler:
     """Dispatch search requests to the proper strategy and return memory dictionaries."""
 
-    def __init__(self, storage: QdrantStorage):
+    def __init__(self, storage: QdrantStorage) -> None:
         self._strategies: dict[str, SearchStrategy] = {
-            "default": DefaultSearchStrategy(storage),
+            "basic": BasicSearchStrategy(storage),
             "filtered": FilteredSearchStrategy(storage),
-            "by_id": ByIdSearchStrategy(storage),
+            "by_memory_id": ByIdSearchStrategy(storage),
         }
 
     async def search(self, params: dict[str, Any]) -> list[dict[str, Any]]:
@@ -33,8 +35,8 @@ class SearchHandler:
         search_type = params["search_type"]
         query = params["query"]
 
-        if search_type in ["default", "by_id"] and (not query or not query.strip()):
-            raise ValueError("Query cannot be empty for semantic and by-id searches")
+        if search_type in ["basic", "by_memory_id"] and (not query or not query.strip()):
+            raise ValueError("Query cannot be empty for semantic and by_memory_id searches")
 
         strategy = self._strategies.get(search_type)
         if not strategy:
@@ -43,7 +45,7 @@ class SearchHandler:
         logger.info(f"Dispatching to {search_type} strategy.")
         scored_points = await strategy.search(params)
 
-        # Apply score threshold filtering (post-filtering due to RRF overwriting scores)
+        # Apply score threshold filtering (post-filtering due to hybrid RRF overwriting scores)
         score_threshold = params["score_threshold"]
 
         memories = []

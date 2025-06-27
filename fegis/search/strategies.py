@@ -5,6 +5,7 @@ Implements the Strategy pattern for different search methods.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from enum import Enum
 from typing import TYPE_CHECKING, Any
 
 from loguru import logger
@@ -12,6 +13,16 @@ from qdrant_client import models
 
 if TYPE_CHECKING:
     from fegis.storage import QdrantStorage
+
+__all__ = ["SearchType", "SearchStrategy", "BasicSearchStrategy", "FilteredSearchStrategy", "ByIdSearchStrategy"]
+
+
+class SearchType(str, Enum):
+    """Available search strategies."""
+
+    BASIC = "basic"
+    FILTERED = "filtered"
+    BY_MEMORY_ID = "by_memory_id"
 
 
 class SearchStrategy(ABC):
@@ -26,7 +37,7 @@ class SearchStrategy(ABC):
         pass
 
     def _build_structured_filter(self, params: dict[str, Any]) -> models.Filter | None:
-        """Build Qdrant filter from structured filter array."""
+        """Convert filter parameters into Qdrant filter conditions."""
         filters = params.get("filters", [])
         if not filters:
             return None
@@ -62,7 +73,7 @@ class SearchStrategy(ABC):
         return field_mapping.get(field, field)
 
     def _validate_filters(self, filters: list[dict[str, Any]]) -> None:
-        """Validate filter specifications before processing."""
+        """Check filter field names, operators, and required parameters."""
         valid_operators = [
             "is",
             "is_not",
@@ -71,6 +82,20 @@ class SearchStrategy(ABC):
             "before",
             "between",
             "any_of",
+        ]
+        valid_fields = [
+            "session_id",
+            "tool",
+            "agent_id",
+            "title",
+            "context",
+            "sequence_order",
+            "memory_id",
+            "timestamp",
+            "preceding_memory_id",
+            "archetype_title",
+            "archetype_version",
+            "schema_version",
         ]
 
         for filter_spec in filters:
@@ -82,6 +107,14 @@ class SearchStrategy(ABC):
             if "value" not in filter_spec:
                 raise ValueError("Filter missing required 'value' parameter")
 
+            # Validate field name
+            field = filter_spec["field"]
+            if field not in valid_fields:
+                raise ValueError(
+                    f"Invalid field '{field}'. Valid fields: {valid_fields}"
+                )
+
+            # Validate operator
             operator = filter_spec["operator"]
             if operator not in valid_operators:
                 raise ValueError(
@@ -193,11 +226,11 @@ class SearchStrategy(ABC):
         return models.Filter(should=conditions)
 
 
-class DefaultSearchStrategy(SearchStrategy):
-    """Default semantic search using hybrid vector similarity."""
+class BasicSearchStrategy(SearchStrategy):
+    """Basic semantic search using hybrid vector similarity."""
 
     async def search(self, params: dict[str, Any]) -> list[models.ScoredPoint]:
-        logger.info(f"Performing default search for: '{params['query']}'")
+        logger.info(f"Performing basic search for: '{params['query']}'")
         return await self.storage.client.query(
             collection_name=self.storage.collection_name,
             query_text=params["query"],

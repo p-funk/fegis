@@ -4,7 +4,19 @@ from __future__ import annotations
 
 import re
 from datetime import UTC, datetime
+from enum import Enum
 from typing import Any
+
+__all__ = ["ResultView", "format_memories", "format_relative_time", "format_content_preview"]
+
+
+class ResultView(str, Enum):
+    """Available result view formats."""
+
+    COMPACT = "compact"
+    SUMMARY = "summary"
+    GRAPH = "graph"
+    FULL = "full"
 
 CONTENT_PREVIEW_LENGTH = 150
 RESULT_VIEWS = {
@@ -22,14 +34,13 @@ RESULT_VIEWS = {
     },
     "graph": {
         "fields": [
-            "id",
+            "memory_id",
             "title",
             "preceding_memory_id",
             "session_id",
             "sequence_order",
             "tool",
             "relative_time",
-            "memory_id",
             "timestamp",
             "score",
             "meta.agent_id",
@@ -38,7 +49,7 @@ RESULT_VIEWS = {
     },
     "full": {
         "fields": [
-            "id",
+            "memory_id",
             "score",
             "title",
             "content",
@@ -51,7 +62,6 @@ RESULT_VIEWS = {
             "parameters",
             "frames",
             "meta",
-            "memory_id",
         ]
     },
 }

@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import uuid
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from loguru import logger
 from qdrant_client import AsyncQdrantClient, models
@@ -13,11 +13,13 @@ from qdrant_client import AsyncQdrantClient, models
 if TYPE_CHECKING:
     from .config import FegisConfig
 
+__all__ = ["QdrantStorage"]
+
 
 class QdrantStorage:
     """Manages all communication with the Qdrant collection."""
 
-    def __init__(self, config: FegisConfig):
+    def __init__(self, config: FegisConfig) -> None:
         self.config = config
         self.collection_name = config.collection_name
         self.client = AsyncQdrantClient(
@@ -27,7 +29,7 @@ class QdrantStorage:
             grpc_port=config.grpc_port,
         )
 
-    async def initialize(self):
+    async def initialize(self) -> None:
         """Sets up embedding models and ensures the collection exists."""
         import sys
 
@@ -66,7 +68,7 @@ class QdrantStorage:
             raise
         await self.ensure_indexes()
 
-    async def ensure_indexes(self):
+    async def ensure_indexes(self) -> None:
         """Creates indexes for the semantic-first payload structure."""
         desired_indexes = {
             "title": models.PayloadSchemaType.TEXT,
@@ -148,10 +150,10 @@ class QdrantStorage:
     async def store_invocation(
         self,
         tool_name: str,
-        parameters: dict,
-        frames: dict,
-        archetype: dict,
-        context: dict,
+        parameters: dict[str, Any],
+        frames: dict[str, Any],
+        archetype: dict[str, Any],
+        context: dict[str, Any],
     ) -> str:
         """Stores the result of a tool invocation and returns its new ID."""
         memory_title = parameters.get("Title", f"{tool_name} Invocation")
@@ -202,6 +204,6 @@ class QdrantStorage:
         )
         return memory_id
 
-    async def close(self):
+    async def close(self) -> None:
         """Closes the connection to Qdrant."""
         await self.client.close()

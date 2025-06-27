@@ -20,11 +20,12 @@ from .schema import (
 from .search import SearchHandler
 from .storage import QdrantStorage
 
+__all__ = ["main"]
+
 
 def main() -> int:
     """Main entry point for Fegis MCP server."""
 
-    # Load configuration
     try:
         config = FegisConfig.from_env()
         print(f"[OK] Loaded config for agent: {config.agent_id}", file=sys.stderr)
@@ -39,7 +40,6 @@ def main() -> int:
         print(f"[ERROR] Storage setup error: {e}", file=sys.stderr)
         return 1
 
-    # Load archetype and generate schemas
     try:
         archetype_data = load_archetype(config.archetype_path)
         tool_schemas = create_tool_schemas(archetype_data)
@@ -53,7 +53,6 @@ def main() -> int:
         print(f"[ERROR] Archetype loading error: {e}", file=sys.stderr)
         return 1
 
-    # Create MCP server instance
     mcp_server = Server(config.server_name)
 
     # Generate session ID for this server uptime - all tool calls will use this
@@ -62,10 +61,9 @@ def main() -> int:
 
     @mcp_server.list_tools()
     async def list_tools() -> list[types.Tool]:
-        """List available tools."""
+        """Return all available archetype and search tools."""
         tools = []
 
-        # Add archetype tools
         for tool_name, schema in tool_schemas.items():
             tool_definition = archetype_data["tools"][tool_name]
             tools.append(
@@ -76,7 +74,6 @@ def main() -> int:
                 )
             )
 
-        # Add search tool
         search_tool_config = config.SEARCH_TOOL
         tools.append(
             types.Tool(
@@ -88,119 +85,91 @@ def main() -> int:
 
         return tools
 
+    async def handle_search_tool(arguments: dict) -> dict:
+        """Execute search tool and return formatted results."""
+        search_args = {
+            "query": arguments.get("query", ""),
+            "limit": arguments.get("limit", 3),
+            "search_type": arguments.get("search_type", "default"),
+            "detail": arguments.get("detail", "summary"),
+            "score_threshold": arguments.get("score_threshold", 0.4),
+            "filters": arguments.get("filters", []),
+        }
+        search_handler = SearchHandler(storage)
+        found_memories = await search_handler.search(search_args)
+
+        from .search.formatters import format_memories
+        formatted_results = format_memories(found_memories, search_args["detail"])
+        return {"search_results": formatted_results}
+
+    def return_tool_error(error_msg: str) -> str:
+        """Clean up validation error messages for better AI understanding."""
+        if "Cannot convert undefined or null to object" in error_msg:
+            return "One or more required fields are missing or null. Please provide all required frame fields with valid values."
+        elif "undefined" in error_msg or "null" in error_msg:
+            return f"Invalid field value: {error_msg}. Please provide valid values for all required fields."
+        else:
+            # Remove "data." prefix from fastjsonschema errors
+            return error_msg.replace("data.", "").replace("data ", "")
+
+    async def handle_archetype_tool(name: str, arguments: dict) -> dict:
+        """Execute archetype tool, validate inputs, and store as memory."""
+        tool_definition = archetype_data["tools"][name]
+
+        tool_parameter_keys = set(tool_definition.get("parameters", {}).keys())
+        all_parameter_keys = tool_parameter_keys | set(STANDARD_FIELDS)
+        parameters = {k: v for k, v in arguments.items() if k in all_parameter_keys}
+
+        frame_field_keys = set(tool_definition.get("frames", {}).keys())
+        frames = {k: v for k, v in arguments.items() if k in frame_field_keys}
+
+        complete_response = {**parameters, **frames}
+        try:
+            tool_validators[name](complete_response)
+        except Exception as validation_error:
+            error_msg = return_tool_error(str(validation_error))
+            raise ValueError(f"Tool validation failed: {error_msg}\nPlease correct the errors and retry.") from validation_error
+
+        preceding_memory_id, sequence_order = await storage.get_last_memory_for_session(server_session_id)
+        tool_context = {
+            "session_id": server_session_id,
+            "sequence_order": sequence_order,
+            "preceding_memory_id": preceding_memory_id,
+        }
+
+        memory_id = await storage.store_invocation(
+            tool_name=name,
+            parameters=parameters,
+            frames=frames,
+            archetype=archetype_data,
+            context=tool_context,
+        )
+
+        return {
+            "message": f"'{name}' stored with memory_id: {memory_id}",
+        }
+
     @mcp_server.call_tool()
     async def call_tool(name: str, arguments: dict) -> list[types.TextContent]:
-        """Handle tool calls."""
-
-        nonlocal storage
-
+        """Route tool calls to appropriate handlers and return JSON responses."""
         try:
-            # Use the server session ID for this uptime
-            session_id = server_session_id
-            search_result = None
-            execution_result = None
-
             if name == config.SEARCH_TOOL["name"]:
-                # Handle search tool - implement actual search with defaults
-                search_args = {
-                    "query": arguments.get("query", ""),
-                    "limit": arguments.get("limit", 3),
-                    "search_type": arguments.get("search_type", "default"),
-                    "detail": arguments.get("detail", "summary"),
-                    "score_threshold": arguments.get("score_threshold", 0.4),
-                    "filters": arguments.get("filters", []),
-                }
-                search_handler = SearchHandler(storage)
-                found_memories = await search_handler.search(search_args)
-
-                from .search.formatters import format_memories
-
-                formatted_results = format_memories(
-                    found_memories, search_args["detail"]
-                )
-
-                search_result = {"search_results": formatted_results}
+                result = await handle_search_tool(arguments)
             elif name in archetype_data["tools"]:
-                # Handle archetype tool - separate parameters from frames
-                tool_definition = archetype_data["tools"][name]
-
-                # Extract parameters (tool-specific parameters + standard fields)
-                tool_parameter_keys = set(tool_definition.get("parameters", {}).keys())
-                all_parameter_keys = tool_parameter_keys | set(STANDARD_FIELDS)
-
-                parameters = {
-                    k: v for k, v in arguments.items() if k in all_parameter_keys
-                }
-
-                # Extract frames (structured output fields)
-                frame_field_keys = set(tool_definition.get("frames", {}).keys())
-                frames = {k: v for k, v in arguments.items() if k in frame_field_keys}
-
-                # Validate complete AI response against tool schema
-                complete_response = {**parameters, **frames}
-                try:
-                    tool_validators[name](complete_response)
-                except Exception as e:
-                    # Return validation error for AI auto-correction
-                    validation_error = {
-                        "error": "Tool validation failed",
-                        "message": f"{str(e)}\nPlease correct the errors and retry.",
-                    }
-                    return [
-                        types.TextContent(
-                            type="text", text=json.dumps(validation_error, indent=2)
-                        )
-                    ]
-
-                # Get the last memory ID and next sequence order for this session
-                (
-                    preceding_memory_id,
-                    sequence_order,
-                ) = await storage.get_last_memory_for_session(session_id)
-
-                tool_context = {
-                    "session_id": session_id,
-                    "sequence_order": sequence_order,
-                    "preceding_memory_id": preceding_memory_id,
-                }
-
-                memory_id = await storage.store_invocation(
-                    tool_name=name,
-                    parameters=parameters,
-                    frames=frames,
-                    archetype=archetype_data,
-                    context=tool_context,
-                )
-
-                execution_result = {
-                    "message": f"Tool '{name}' executed successfully",
-                    "memory_id": memory_id,
-                }
+                result = await handle_archetype_tool(name, arguments)
             else:
                 raise ValueError(f"Unknown tool: {name}")
 
-            return [
-                types.TextContent(
-                    type="text",
-                    text=json.dumps(
-                        search_result
-                        if name == config.SEARCH_TOOL["name"]
-                        else execution_result,
-                        indent=2,
-                    ),
-                )
-            ]
+            return [types.TextContent(type="text", text=json.dumps(result, indent=2))]
 
         except Exception as e:
             error_result = {"error": str(e), "type": type(e).__name__}
-            return [
-                types.TextContent(type="text", text=json.dumps(error_result, indent=2))
-            ]
+            return [types.TextContent(type="text", text=json.dumps(error_result, indent=2))]
 
-    # Run with configured transport
     if config.transport == "stdio":
 
-        async def run_server():
+        async def run_server() -> None:
+
             # Initialize storage at server startup
             try:
                 await storage.initialize()
