@@ -103,6 +103,7 @@ def main() -> int:
         formatted_results = format_memories(found_memories, search_args["detail"])
         return {"search_results": formatted_results}
 
+    # Return useful error messages so models can "auto correct" input
     def return_tool_error(error_msg: str) -> str:
         """Clean up validation error messages for better AI understanding."""
         if "Cannot convert undefined or null to object" in error_msg:

@@ -26,16 +26,17 @@ class ResultView(str, Enum):
 
 CONTENT_PREVIEW_LENGTH = 150
 RESULT_VIEWS = {
-    "compact": {"fields": ["id", "title", "tool", "context", "score"]},
+    "compact": {"fields": ["memory_id", "title", "tool", "context", "session_id", "score"]},
     "summary": {
         "fields": [
-            "id",
+            "memory_id",
             "title",
             "context",
             "tool",
             "score",
             "content_preview",
             "relative_time",
+            "session_id",
         ]
     },
     "graph": {
