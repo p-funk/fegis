@@ -7,7 +7,12 @@ from datetime import UTC, datetime
 from enum import Enum
 from typing import Any
 
-__all__ = ["ResultView", "format_memories", "format_relative_time", "format_content_preview"]
+__all__ = [
+    "ResultView",
+    "format_memories",
+    "format_relative_time",
+    "format_content_preview",
+]
 
 
 class ResultView(str, Enum):
@@ -17,6 +22,7 @@ class ResultView(str, Enum):
     SUMMARY = "summary"
     GRAPH = "graph"
     FULL = "full"
+
 
 CONTENT_PREVIEW_LENGTH = 150
 RESULT_VIEWS = {
@@ -67,7 +73,9 @@ RESULT_VIEWS = {
 }
 
 
-def format_memories(memories: list[dict[str, Any]], view_name: str) -> list[dict[str, Any]]:
+def format_memories(
+    memories: list[dict[str, Any]], view_name: str
+) -> list[dict[str, Any]]:
     """Format memory dictionaries according to view configuration."""
     view_config = RESULT_VIEWS.get(view_name)
     if not view_config:

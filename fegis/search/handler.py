@@ -35,8 +35,12 @@ class SearchHandler:
         search_type = params["search_type"]
         query = params["query"]
 
-        if search_type in ["basic", "by_memory_id"] and (not query or not query.strip()):
-            raise ValueError("Query cannot be empty for semantic and by_memory_id searches")
+        if search_type in ["basic", "by_memory_id"] and (
+            not query or not query.strip()
+        ):
+            raise ValueError(
+                "Query cannot be empty for semantic and by_memory_id searches"
+            )
 
         strategy = self._strategies.get(search_type)
         if not strategy:

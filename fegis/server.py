@@ -54,6 +54,7 @@ def main() -> int:
         return 1
 
     mcp_server = Server(config.server_name)
+    search_handler = SearchHandler(storage)
 
     # Generate session ID for this server uptime - all tool calls will use this
     server_session_id = str(uuid.uuid4())
@@ -95,10 +96,10 @@ def main() -> int:
             "score_threshold": arguments.get("score_threshold", 0.4),
             "filters": arguments.get("filters", []),
         }
-        search_handler = SearchHandler(storage)
         found_memories = await search_handler.search(search_args)
 
         from .search.formatters import format_memories
+
         formatted_results = format_memories(found_memories, search_args["detail"])
         return {"search_results": formatted_results}
 
@@ -128,9 +129,13 @@ def main() -> int:
             tool_validators[name](complete_response)
         except Exception as validation_error:
             error_msg = return_tool_error(str(validation_error))
-            raise ValueError(f"Tool validation failed: {error_msg}\nPlease correct the errors and retry.") from validation_error
+            raise ValueError(
+                f"Tool validation failed: {error_msg}\nPlease correct the errors and retry."
+            ) from validation_error
 
-        preceding_memory_id, sequence_order = await storage.get_last_memory_for_session(server_session_id)
+        preceding_memory_id, sequence_order = await storage.get_last_memory_for_session(
+            server_session_id
+        )
         tool_context = {
             "session_id": server_session_id,
             "sequence_order": sequence_order,
@@ -164,12 +169,13 @@ def main() -> int:
 
         except Exception as e:
             error_result = {"error": str(e), "type": type(e).__name__}
-            return [types.TextContent(type="text", text=json.dumps(error_result, indent=2))]
+            return [
+                types.TextContent(type="text", text=json.dumps(error_result, indent=2))
+            ]
 
     if config.transport == "stdio":
 
         async def run_server() -> None:
-
             # Initialize storage at server startup
             try:
                 await storage.initialize()

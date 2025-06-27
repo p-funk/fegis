@@ -14,7 +14,13 @@ from qdrant_client import models
 if TYPE_CHECKING:
     from fegis.storage import QdrantStorage
 
-__all__ = ["SearchType", "SearchStrategy", "BasicSearchStrategy", "FilteredSearchStrategy", "ByIdSearchStrategy"]
+__all__ = [
+    "SearchType",
+    "SearchStrategy",
+    "BasicSearchStrategy",
+    "FilteredSearchStrategy",
+    "ByIdSearchStrategy",
+]
 
 
 class SearchType(str, Enum):

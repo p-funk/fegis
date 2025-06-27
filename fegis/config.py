@@ -47,7 +47,6 @@ class FegisConfig:
     qdrant_url: str = "http://localhost:6333"
     collection_name: str = "fegis_memory"
     embedding_model: str = "BAAI/bge-small-en"
-    sparse_embedding_model: str = "prithivida/Splade_PP_en_v1"
     agent_id: str = "default-agent"
     qdrant_api_key: str | None = None
     prefer_grpc: bool = True
@@ -170,9 +169,6 @@ class FegisConfig:
             qdrant_url=os.getenv("QDRANT_URL", "http://localhost:6333"),
             collection_name=os.getenv("COLLECTION_NAME", "fegis_memory"),
             embedding_model=os.getenv("EMBEDDING_MODEL", "BAAI/bge-small-en"),
-            sparse_embedding_model=os.getenv(
-                "SPARSE_EMBEDDING_MODEL", "prithivida/Splade_PP_en_v1"
-            ),
             agent_id=os.getenv("AGENT_ID", "default-agent"),
             qdrant_api_key=os.getenv("QDRANT_API_KEY"),
             prefer_grpc=os.getenv("PREFER_GRPC", "true").lower() == "true",

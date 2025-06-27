@@ -102,9 +102,7 @@ def format_new_search_results(search_results, query_from_call, full_output=False
                 if idx != len(results):
                     print()
     except (json.JSONDecodeError, TypeError):
-        print(
-            f"📋 SEARCH RESPONSE: {_pretty(search_results, full_output=full_output)}"
-        )
+        print(f"📋 SEARCH RESPONSE: {_pretty(search_results, full_output=full_output)}")
 
 
 def format_response(data, full_output=False):

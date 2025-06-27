@@ -45,13 +45,6 @@ class QdrantStorage:
         self.client.set_model(self.config.embedding_model)
         print("[OK] Dense model ready", file=sys.stderr)
 
-        print(
-            f"[INIT] Setting sparse embedding model: {self.config.sparse_embedding_model}",
-            file=sys.stderr,
-        )
-        self.client.set_sparse_model(self.config.sparse_embedding_model)
-        print("[OK] Sparse model ready", file=sys.stderr)
-
         try:
             exists = await self.client.collection_exists(self.collection_name)
             if exists:
@@ -61,7 +54,6 @@ class QdrantStorage:
                 await self.client.create_collection(
                     collection_name=self.collection_name,
                     vectors_config=self.client.get_fastembed_vector_params(),
-                    sparse_vectors_config=self.client.get_fastembed_sparse_vector_params(),
                 )
         except Exception as e:
             logger.error(f"Error checking/creating collection: {e}")

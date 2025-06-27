@@ -43,7 +43,6 @@ Update `claude_desktop_config.json`:
         "QDRANT_API_KEY": "",
         "COLLECTION_NAME": "fegis_memory",
         "EMBEDDING_MODEL": "BAAI/bge-small-en",
-        "SPARSE_EMBEDDING_MODEL": "prithivida/Splade_PP_en_v1",
         "ARCHETYPE_PATH": "/absolute/path/to/fegis-wip/archetypes/default.yaml",
         "AGENT_ID": "claude_desktop"
       }
@@ -121,7 +120,6 @@ Optional environment variables:
 - `COLLECTION_NAME` - Qdrant collection name (default: fegis_memory)
 - `AGENT_ID` - Identifier for this agent (default: default-agent)
 - `EMBEDDING_MODEL` - Dense embedding model (default: BAAI/bge-small-en)
-- `SPARSE_EMBEDDING_MODEL` - Sparse embedding model (default: prithivida/Splade_PP_en_v1)
 - `QDRANT_API_KEY` - API key for remote Qdrant (default: empty)
 
 ## Requirements

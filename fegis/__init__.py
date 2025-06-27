@@ -25,12 +25,12 @@ Architecture:
 from __future__ import annotations
 
 from .config import FegisConfig
-from .storage import QdrantStorage
 from .search import SearchHandler
+from .storage import QdrantStorage
 
 __version__ = "2.0.0"
 __all__ = [
     "FegisConfig",
-    "QdrantStorage", 
+    "QdrantStorage",
     "SearchHandler",
 ]
