@@ -157,7 +157,7 @@ def _process_parameters(
             parameter_property[KEY_EXAMPLES] = global_param_definition[KEY_EXAMPLES]
 
         if param_binding_value is None:
-            # Required: model must provide value
+            # Add x-required for required parameters
             parameter_property[KEY_X_REQUIRED] = True
             required_parameters.append(param_name)
         elif isinstance(param_binding_value, str) and param_binding_value:
@@ -213,7 +213,7 @@ def _process_frames(
 
         frame_property = {"type": type_mapping.get(frame_type, frame_type)}
 
-        # Structured Frame Design Patterns - Only x-required is needed
+        # Add x-required for required frames
         if is_required_frame:
             frame_property[KEY_X_REQUIRED] = True
             required_frames.append(frame_name)

@@ -145,7 +145,7 @@ class QdrantStorage:
         parameters: dict[str, Any],
         frames: dict[str, Any],
         archetype: dict[str, Any],
-        context: dict[str, Any],
+        provenance: dict[str, Any],
     ) -> str:
         """Stores the result of a tool invocation and returns its new ID."""
         memory_title = parameters.get("Title", f"{tool_name} Invocation")
@@ -171,11 +171,11 @@ class QdrantStorage:
             "title": memory_title,
             "context": memory_context,
             "tool": tool_name,
-            "session_id": context.get("session_id"),
-            "sequence_order": context.get("sequence_order", 0),
+            "session_id": provenance.get("session_id"),
+            "sequence_order": provenance.get("sequence_order", 0),
             "memory_id": memory_id,
             "timestamp": datetime.now(UTC).isoformat(),
-            "preceding_memory_id": context.get("preceding_memory_id"),
+            "preceding_memory_id": provenance.get("preceding_memory_id"),
             "parameters": filtered_parameters,
             "frames": filtered_frames,
             "meta": {
@@ -197,5 +197,4 @@ class QdrantStorage:
         return memory_id
 
     async def close(self) -> None:
-        """Closes the connection to Qdrant."""
         await self.client.close()

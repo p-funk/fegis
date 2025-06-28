@@ -80,4 +80,4 @@ class SearchHandler:
         if not payload:
             return None
 
-        return {"id": point.id, "score": score, "content": content, **payload}
+        return {"memory_id": point.id, "score": score, "content": content, **payload}

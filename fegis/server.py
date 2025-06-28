@@ -91,7 +91,7 @@ def main() -> int:
         search_args = {
             "query": arguments.get("query", ""),
             "limit": arguments.get("limit", 3),
-            "search_type": arguments.get("search_type", "default"),
+            "search_type": arguments.get("search_type", "basic"),
             "detail": arguments.get("detail", "summary"),
             "score_threshold": arguments.get("score_threshold", 0.4),
             "filters": arguments.get("filters", []),
@@ -137,7 +137,7 @@ def main() -> int:
         preceding_memory_id, sequence_order = await storage.get_last_memory_for_session(
             server_session_id
         )
-        tool_context = {
+        tool_provenance = {
             "session_id": server_session_id,
             "sequence_order": sequence_order,
             "preceding_memory_id": preceding_memory_id,
@@ -148,7 +148,7 @@ def main() -> int:
             parameters=parameters,
             frames=frames,
             archetype=archetype_data,
-            context=tool_context,
+            provenance=tool_provenance,
         )
 
         return {

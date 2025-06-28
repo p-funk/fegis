@@ -84,39 +84,39 @@ def format_memories(
             f"Unknown view: {view_name}. Available: {list(RESULT_VIEWS.keys())}"
         )
 
-    results = []
+    return [
+        {field: _get_field_value(memory, field) for field in view_config["fields"]}
+        for memory in memories
+    ]
 
-    for memory in memories:
-        result = {}
 
-        for field in view_config["fields"]:
-            if field == "content_preview":
-                content = memory.get("content", "")
-                result[field] = format_content_preview(content, CONTENT_PREVIEW_LENGTH)
-            elif field == "relative_time":
-                timestamp_str = memory.get("timestamp", "")
-                if timestamp_str:
-                    try:
-                        timestamp = datetime.fromisoformat(
-                            timestamp_str.replace("Z", "+00:00")
-                        )
-                        result[field] = format_relative_time(timestamp)
-                    except (ValueError, AttributeError):
-                        result[field] = timestamp_str
-                else:
-                    result[field] = ""
-            elif "." in field:
-                value = _get_nested_field_dict(memory, field)
-                result[field] = value
-            else:
-                value = memory.get(field)
-                if isinstance(value, datetime):
-                    value = value.isoformat()
-                result[field] = value
+def _get_field_value(memory: dict[str, Any], field: str) -> Any:
+    """Get formatted value for a specific field."""
+    field_processors = {
+        "content_preview": lambda m: format_content_preview(
+            m.get("content", ""), CONTENT_PREVIEW_LENGTH
+        ),
+        "relative_time": lambda m: _process_relative_time(m.get("timestamp", "")),
+    }
 
-        results.append(result)
+    if field in field_processors:
+        return field_processors[field](memory)
+    elif "." in field:
+        return _get_nested_field_dict(memory, field)
+    else:
+        value = memory.get(field)
+        return value.isoformat() if isinstance(value, datetime) else value
 
-    return results
+
+def _process_relative_time(timestamp_str: str) -> str:
+    """Process timestamp string into relative time."""
+    if not timestamp_str:
+        return ""
+    try:
+        timestamp = datetime.fromisoformat(timestamp_str.replace("Z", "+00:00"))
+        return format_relative_time(timestamp)
+    except (ValueError, AttributeError):
+        return timestamp_str
 
 
 def _get_nested_field_dict(obj: dict[str, Any], field_path: str) -> Any:
@@ -212,5 +212,5 @@ def format_content_preview(content: str, max_length: int = 150) -> str:
     if len(preview) <= max_length:
         return preview
 
-    # If summary is too long, truncate the summary intelligently
+    # If summary is too long, truncate the summary
     return preview[: max_length - 3] + "..."
