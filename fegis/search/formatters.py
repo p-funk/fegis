@@ -26,7 +26,9 @@ class ResultView(str, Enum):
 
 CONTENT_PREVIEW_LENGTH = 150
 RESULT_VIEWS = {
-    "compact": {"fields": ["memory_id", "title", "tool", "context", "session_id", "score"]},
+    "compact": {
+        "fields": ["memory_id", "title", "tool", "context", "session_id", "score"]
+    },
     "summary": {
         "fields": [
             "memory_id",
@@ -212,5 +214,5 @@ def format_content_preview(content: str, max_length: int = 150) -> str:
     if len(preview) <= max_length:
         return preview
 
-    # If summary is too long, truncate the summary
+    # If summary is too long, truncate the summary intelligently
     return preview[: max_length - 3] + "..."

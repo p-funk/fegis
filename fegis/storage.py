@@ -197,4 +197,5 @@ class QdrantStorage:
         return memory_id
 
     async def close(self) -> None:
+        """Closes the connection to Qdrant."""
         await self.client.close()

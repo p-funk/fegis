@@ -5,6 +5,7 @@ Implements the Strategy pattern for different search methods.
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
+from datetime import datetime
 from enum import Enum
 from typing import TYPE_CHECKING, Any
 
@@ -21,6 +22,47 @@ __all__ = [
     "FilteredSearchStrategy",
     "ByIdSearchStrategy",
 ]
+
+# Mapping of API field names to payload keys in Qdrant
+FIELD_MAPPING = {
+    "agent_id": "meta.agent_id",
+    "archetype_title": "meta.archetype_title",
+    "archetype_version": "meta.archetype_version",
+    "schema_version": "meta.schema_version",
+}
+
+# Valid operators and fields for filter validation
+VALID_OPERATORS = {
+    "is",
+    "is_not",
+    "contains",
+    "after",
+    "before",
+    "between",
+    "any_of",
+}
+
+VALID_FIELDS = {
+    "session_id",
+    "tool",
+    "agent_id",
+    "title",
+    "context",
+    "sequence_order",
+    "memory_id",
+    "timestamp",
+    "preceding_memory_id",
+    "archetype_title",
+    "archetype_version",
+    "schema_version",
+}
+
+# Performance optimization - cache sorted lists for error messages
+_SORTED_VALID_FIELDS = sorted(VALID_FIELDS)
+_SORTED_VALID_OPERATORS = sorted(VALID_OPERATORS)
+
+# Constants for magic numbers
+EXACT_MATCH_SCORE = 1.0
 
 
 class SearchType(str, Enum):
@@ -63,46 +105,20 @@ class SearchStrategy(ABC):
 
             # Build condition based on operator
             condition = self._build_condition(field_key, operator, value)
-            if condition:
-                must_conditions.append(condition)
+            if condition is None:
+                raise ValueError(
+                    f"Failed to build condition for field '{field}' with operator '{operator}' and value '{value}'"
+                )
+            must_conditions.append(condition)
 
         return models.Filter(must=must_conditions) if must_conditions else None
 
     def _map_field_to_key(self, field: str) -> str:
         """Map schema field names to Qdrant payload keys."""
-        field_mapping = {
-            "agent_id": "meta.agent_id",
-            "archetype_title": "meta.archetype_title",
-            "archetype_version": "meta.archetype_version",
-            "schema_version": "meta.schema_version",
-        }
-        return field_mapping.get(field, field)
+        return FIELD_MAPPING.get(field, field)
 
     def _validate_filters(self, filters: list[dict[str, Any]]) -> None:
         """Check filter field names, operators, and required parameters."""
-        valid_operators = [
-            "is",
-            "is_not",
-            "contains",
-            "after",
-            "before",
-            "between",
-            "any_of",
-        ]
-        valid_fields = [
-            "session_id",
-            "tool",
-            "agent_id",
-            "title",
-            "context",
-            "sequence_order",
-            "memory_id",
-            "timestamp",
-            "preceding_memory_id",
-            "archetype_title",
-            "archetype_version",
-            "schema_version",
-        ]
 
         for filter_spec in filters:
             # Check required fields
@@ -115,20 +131,19 @@ class SearchStrategy(ABC):
 
             # Validate field name
             field = filter_spec["field"]
-            if field not in valid_fields:
+            if field not in VALID_FIELDS:
                 raise ValueError(
-                    f"Invalid field '{field}'. Valid fields: {valid_fields}"
+                    f"Invalid field '{field}'. Valid fields: {_SORTED_VALID_FIELDS}"
                 )
 
             # Validate operator
             operator = filter_spec["operator"]
-            if operator not in valid_operators:
+            if operator not in VALID_OPERATORS:
                 raise ValueError(
-                    f"Invalid operator '{operator}'. Valid operators: {valid_operators}"
+                    f"Invalid operator '{operator}'. Valid operators: {_SORTED_VALID_OPERATORS}"
                 )
 
             # Validate date formats for timestamp fields
-            field = filter_spec["field"]
             value = filter_spec["value"]
             if field == "timestamp" and operator in ["after", "before"]:
                 if not isinstance(value, str):
@@ -136,8 +151,6 @@ class SearchStrategy(ABC):
                         "Timestamp filter values must be strings in ISO format"
                     )
                 try:
-                    from datetime import datetime
-
                     datetime.fromisoformat(value.replace("Z", "+00:00"))
                 except ValueError as e:
                     raise ValueError(
@@ -148,30 +161,33 @@ class SearchStrategy(ABC):
         self, field_key: str, operator: str, value
     ) -> models.Condition | None:
         """Build a Qdrant condition from instructional operator and value."""
-        builders = {
-            "is": lambda: models.FieldCondition(
-                key=field_key, match=models.MatchValue(value=value)
-            ),
-            "is_not": lambda: models.FieldCondition(
-                key=field_key, match=models.MatchExcept(**{"except": [value]})
-            ),
-            "before": lambda: models.FieldCondition(
-                key=field_key, range=models.Range(lt=value)
-            ),
-            "after": lambda: models.FieldCondition(
-                key=field_key, range=models.Range(gt=value)
-            ),
-            "between": lambda: self._build_range_condition(field_key, value),
-            "contains": lambda: self._build_contains_condition(field_key, value),
-            "any_of": lambda: self._build_array_condition(field_key, value),
-        }
-
-        if operator not in builders:
-            logger.warning(f"Unknown operator: {operator}")
-            return None
-
         try:
-            return builders[operator]()
+            match operator:
+                case "is":
+                    return models.FieldCondition(
+                        key=field_key, match=models.MatchValue(value=value)
+                    )
+                case "is_not":
+                    return models.FieldCondition(
+                        key=field_key, match=models.MatchExcept(**{"except": [value]})
+                    )
+                case "before":
+                    return models.FieldCondition(
+                        key=field_key, range=models.Range(lt=value)
+                    )
+                case "after":
+                    return models.FieldCondition(
+                        key=field_key, range=models.Range(gt=value)
+                    )
+                case "between":
+                    return self._build_range_condition(field_key, value)
+                case "contains":
+                    return self._build_contains_condition(field_key, value)
+                case "any_of":
+                    return self._build_array_condition(field_key, value)
+                case _:
+                    logger.warning(f"Unknown operator: {operator}")
+                    return None
         except Exception as e:
             logger.error(f"Error building {operator} condition: {e}")
             return None
@@ -198,37 +214,17 @@ class SearchStrategy(ABC):
                 key=field_key, match=models.MatchText(text=str(value))
             )
 
-        # Create multiple conditions for flexible matching
-        search_value = value.lower()
-        conditions = []
+        # Build search variants and remove duplicates
+        variants = {value, value.lower(), value.capitalize()}
+        conditions = [
+            models.FieldCondition(key=field_key, match=models.MatchText(text=v))
+            for v in variants
+        ]
 
-        # Exact match (case-insensitive)
-        conditions.append(
-            models.FieldCondition(
-                key=field_key, match=models.MatchText(text=search_value)
-            )
-        )
-
-        # Original case match
-        if value != search_value:
-            conditions.append(
-                models.FieldCondition(key=field_key, match=models.MatchText(text=value))
-            )
-
-        # Capitalize first letter
-        capitalized = value.capitalize()
-        if capitalized not in [value, search_value]:
-            conditions.append(
-                models.FieldCondition(
-                    key=field_key, match=models.MatchText(text=capitalized)
-                )
-            )
-
-        # If single condition, return it directly
-        if len(conditions) == 1:
+        # Return single condition directly for efficiency
+        if len(variants) == 1:
             return conditions[0]
 
-        # Multiple conditions - use OR logic
         return models.Filter(should=conditions)
 
 
@@ -282,7 +278,7 @@ class ByIdSearchStrategy(SearchStrategy):
         scored_points = []
         for point in points:
             scored_point = models.ScoredPoint(
-                id=point.id, version=0, score=1.0, payload=point.payload, vector=None
+                id=point.id, version=0, score=EXACT_MATCH_SCORE, payload=point.payload, vector=None
             )
             scored_points.append(scored_point)
 
