@@ -245,6 +245,7 @@ test_output/
 # AI codeing assistant artifacts
 CLAUDE.md
 AGENTS.md
+GEMINI.md
 .claude/
 .mcp.json
 FAQ.md

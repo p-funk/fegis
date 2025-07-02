@@ -62,6 +62,7 @@ class FegisConfig:
         """Load the search tool schema from the JSON file after initialization."""
         import json
         from pathlib import Path
+
         schema_path = Path(__file__).parent / "search_tool_schema.json"
         try:
             with open(schema_path, encoding="utf-8") as f:

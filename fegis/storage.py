@@ -202,4 +202,3 @@ class QdrantStorage:
     async def close(self) -> None:
         """Closes the connection to Qdrant."""
         await self.client.close()
-

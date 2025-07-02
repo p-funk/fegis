@@ -161,7 +161,9 @@ class SearchStrategy(ABC):
         self, field_key: str, operator: str, value
     ) -> models.Condition | None:
         """Build a Qdrant condition from instructional operator and value."""
-        logger.info(f"Building condition: field_key={field_key}, operator={operator}, value={value}")
+        logger.info(
+            f"Building condition: field_key={field_key}, operator={operator}, value={value}"
+        )
         try:
             match operator:
                 case "is":
@@ -183,11 +185,17 @@ class SearchStrategy(ABC):
                     )
                 case "after":
                     if field_key == "timestamp":
-                        logger.info(f"Datetime value type: {type(value)}, value: {value}")
+                        logger.info(
+                            f"Datetime value type: {type(value)}, value: {value}"
+                        )
                         if isinstance(value, str):
-                            dt_value = datetime.fromisoformat(value.replace("Z", "+00:00"))
+                            dt_value = datetime.fromisoformat(
+                                value.replace("Z", "+00:00")
+                            )
                         else:
-                            raise ValueError(f"Expected string for timestamp, got {type(value)}: {value}")
+                            raise ValueError(
+                                f"Expected string for timestamp, got {type(value)}: {value}"
+                            )
                         return models.FieldCondition(
                             key=field_key, range=models.DatetimeRange(gt=dt_value)
                         )
@@ -301,7 +309,11 @@ class ByIdSearchStrategy(SearchStrategy):
         scored_points = []
         for point in points:
             scored_point = models.ScoredPoint(
-                id=point.id, version=0, score=EXACT_MATCH_SCORE, payload=point.payload, vector=None
+                id=point.id,
+                version=0,
+                score=EXACT_MATCH_SCORE,
+                payload=point.payload,
+                vector=None,
             )
             scored_points.append(scored_point)
 

@@ -200,7 +200,10 @@ def main() -> int:
                 types.TextContent(type="text", text=json.dumps(error_result, indent=2))
             ]
         except Exception as e:
-            error_result = {"error": f"An unexpected error occurred: {e}", "type": type(e).__name__}
+            error_result = {
+                "error": f"An unexpected error occurred: {e}",
+                "type": type(e).__name__,
+            }
             return [
                 types.TextContent(type="text", text=json.dumps(error_result, indent=2))
             ]
@@ -235,4 +238,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     main()
-
