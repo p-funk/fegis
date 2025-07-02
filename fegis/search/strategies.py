@@ -161,6 +161,7 @@ class SearchStrategy(ABC):
         self, field_key: str, operator: str, value
     ) -> models.Condition | None:
         """Build a Qdrant condition from instructional operator and value."""
+        logger.info(f"Building condition: field_key={field_key}, operator={operator}, value={value}")
         try:
             match operator:
                 case "is":
@@ -172,10 +173,24 @@ class SearchStrategy(ABC):
                         key=field_key, match=models.MatchExcept(**{"except": [value]})
                     )
                 case "before":
+                    if field_key == "timestamp":
+                        dt_value = datetime.fromisoformat(value.replace("Z", "+00:00"))
+                        return models.FieldCondition(
+                            key=field_key, range=models.DatetimeRange(lt=dt_value)
+                        )
                     return models.FieldCondition(
                         key=field_key, range=models.Range(lt=value)
                     )
                 case "after":
+                    if field_key == "timestamp":
+                        logger.info(f"Datetime value type: {type(value)}, value: {value}")
+                        if isinstance(value, str):
+                            dt_value = datetime.fromisoformat(value.replace("Z", "+00:00"))
+                        else:
+                            raise ValueError(f"Expected string for timestamp, got {type(value)}: {value}")
+                        return models.FieldCondition(
+                            key=field_key, range=models.DatetimeRange(gt=dt_value)
+                        )
                     return models.FieldCondition(
                         key=field_key, range=models.Range(gt=value)
                     )
@@ -190,12 +205,20 @@ class SearchStrategy(ABC):
                     return None
         except Exception as e:
             logger.error(f"Error building {operator} condition: {e}")
-            return None
+            raise e  # Re-raise to see the actual error
 
     def _build_range_condition(self, field_key: str, value) -> models.Condition:
         """Build range condition with validation."""
         if not isinstance(value, list) or len(value) != 2:
             raise ValueError("'between' operator requires array [min, max]")
+
+        if field_key == "timestamp":
+            dt_start = datetime.fromisoformat(value[0].replace("Z", "+00:00"))
+            dt_end = datetime.fromisoformat(value[1].replace("Z", "+00:00"))
+            return models.FieldCondition(
+                key=field_key, range=models.DatetimeRange(gte=dt_start, lte=dt_end)
+            )
+
         return models.FieldCondition(
             key=field_key, range=models.Range(gte=value[0], lte=value[1])
         )

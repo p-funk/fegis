@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import uuid
 from datetime import UTC, datetime
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, TypedDict
 
 from loguru import logger
 from qdrant_client import AsyncQdrantClient, models
@@ -14,6 +14,14 @@ if TYPE_CHECKING:
     from .config import FegisConfig
 
 __all__ = ["QdrantStorage"]
+
+
+class Provenance(TypedDict):
+    """Type definition for the provenance data structure."""
+
+    session_id: str
+    sequence_order: int
+    preceding_memory_id: str | None
 
 
 class QdrantStorage:
@@ -107,8 +115,7 @@ class QdrantStorage:
     ) -> tuple[str | None, int]:
         """Get the most recent memory ID and next sequence order for a given session."""
         try:
-            # Query for memories in this session, get more records to find the max sequence
-            session_memories, _ = await self.client.scroll(
+            scroll_results, _ = await self.client.scroll(
                 collection_name=self.collection_name,
                 scroll_filter=models.Filter(
                     must=[
@@ -117,22 +124,18 @@ class QdrantStorage:
                         )
                     ]
                 ),
-                limit=50,  # Get more records to find max sequence
+                order_by=models.OrderBy(key="sequence_order", direction="desc"),
+                limit=1,
                 with_payload=True,
-                with_vectors=False,
             )
 
-            if session_memories:
-                # Find the memory with the highest sequence_order
-                latest_memory = max(
-                    session_memories, key=lambda x: x.payload.get("sequence_order", 0)
-                )
+            if scroll_results:
+                latest_memory = scroll_results[0]
                 last_memory_id = latest_memory.payload.get("memory_id")
                 last_sequence_number = latest_memory.payload.get("sequence_order", 0)
                 next_sequence_number = last_sequence_number + 1
                 return last_memory_id, next_sequence_number
 
-            # No memories in this session yet
             return None, 1
 
         except Exception as e:
@@ -145,7 +148,7 @@ class QdrantStorage:
         parameters: dict[str, Any],
         frames: dict[str, Any],
         archetype: dict[str, Any],
-        provenance: dict[str, Any],
+        provenance: Provenance,
     ) -> str:
         """Stores the result of a tool invocation and returns its new ID."""
         memory_title = parameters.get("Title", f"{tool_name} Invocation")
@@ -171,11 +174,11 @@ class QdrantStorage:
             "title": memory_title,
             "context": memory_context,
             "tool": tool_name,
-            "session_id": provenance.get("session_id"),
-            "sequence_order": provenance.get("sequence_order", 0),
+            "session_id": provenance["session_id"],
+            "sequence_order": provenance["sequence_order"],
             "memory_id": memory_id,
             "timestamp": datetime.now(UTC).isoformat(),
-            "preceding_memory_id": provenance.get("preceding_memory_id"),
+            "preceding_memory_id": provenance["preceding_memory_id"],
             "parameters": filtered_parameters,
             "frames": filtered_frames,
             "meta": {
@@ -199,3 +202,4 @@ class QdrantStorage:
     async def close(self) -> None:
         """Closes the connection to Qdrant."""
         await self.client.close()
+

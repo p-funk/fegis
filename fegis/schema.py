@@ -11,6 +11,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
+import fastjsonschema
 import yaml
 from loguru import logger
 
@@ -66,15 +67,16 @@ def load_archetype(path: str) -> ArchetypeData:
         raise FileNotFoundError(f"Archetype file not found: {path}")
 
     with open(filepath, encoding="utf-8") as f:
-        return yaml.safe_load(f)
+        try:
+            return yaml.safe_load(f)
+        except yaml.YAMLError as e:
+            raise ValueError(f"Failed to parse YAML: {e}") from e
 
 
 def create_tool_validators(
     tool_schemas: ToolSchemas,
 ) -> dict[str, Callable[[dict[str, Any]], dict[str, Any]]]:
     """Compile tool schemas into fast validation functions."""
-    import fastjsonschema
-
     validators = {}
     for tool_name, schema in tool_schemas.items():
         validators[tool_name] = fastjsonschema.compile(schema["inputSchema"])
@@ -148,7 +150,7 @@ def _process_parameters(
 
         global_param_definition = global_parameter_definitions[param_name]
         parameter_property = {
-            KEY_TYPE: KEY_STRING,
+            KEY_TYPE: global_param_definition.get(KEY_TYPE, KEY_STRING),
             KEY_DESCRIPTION: global_param_definition.get(KEY_DESCRIPTION, ""),
         }
 

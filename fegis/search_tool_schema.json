@@ -1,0 +1,98 @@
+{
+    "name": "SearchMemory",
+    "description": "Search your stored memories.\n\nChoose your approach: basic (general), filtered (by criteria), by_memory_id (specific memory UUID).\n\nChoose your view: compact (basics only), summary (with context), graph (with relationship meta-data), full (complete memory).",
+    "inputSchema": {
+        "type": "object",
+        "properties": {
+            "query": {
+                "type": "string",
+                "description": "Query or a memory UUID.",
+                "maxLength": 1000
+            },
+            "limit": {
+                "type": "integer",
+                "description": "Number of memories to show",
+                "default": 3,
+                "minimum": 1,
+                "maximum": 100
+            },
+            "search_type": {
+                "type": "string",
+                "enum": ["basic", "filtered", "by_memory_id"],
+                "description": "Recall strategy.",
+                "default": "basic"
+            },
+            "filters": {
+                "type": "array",
+                "description": "One or more query filters.",
+                "items": {
+                    "type": "object",
+                    "properties": {
+                        "field": {
+                            "type": "string",
+                            "enum": [
+                                "session_id",
+                                "tool",
+                                "agent_id",
+                                "title",
+                                "context",
+                                "sequence_order",
+                                "memory_id",
+                                "timestamp",
+                                "preceding_memory_id",
+                                "archetype_title",
+                                "archetype_version",
+                                "schema_version"
+                            ],
+                            "description": "Which field to filter on."
+                        },
+                        "operator": {
+                            "type": "string",
+                            "enum": [
+                                "is",
+                                "is_not",
+                                "before",
+                                "after",
+                                "between",
+                                "contains",
+                                "any_of"
+                            ],
+                            "description": "How to match the field: 'is' for exact match, 'is_not' to exclude, 'before/after' for time/order, 'between' for ranges, 'contains' for text search, 'any_of' for multiple options."
+                        },
+                        "value": {
+                            "description": "Value to match against. Use array [min,max] for 'between', array [item1,item2] for 'any_of', single value for others.",
+                            "oneOf": [
+                                {"type": "string"},
+                                {"type": "number"},
+                                {"type": "array"},
+                                {
+                                    "type": "object",
+                                    "properties": {"from": {}, "to": {}},
+                                    "required": ["from", "to"],
+                                    "additionalProperties": false
+                                }
+                            ]
+                        }
+                    },
+                    "required": ["field", "operator", "value"],
+                    "additionalProperties": false
+                }
+            },
+            "detail": {
+                "type": "string",
+                "enum": ["compact", "summary", "graph", "full"],
+                "description": "How you want to explore your memories: compact (basics only), summary (with context), graph (with relationship meta-data), full (complete detail).",
+                "default": "summary"
+            },
+            "score_threshold": {
+                "type": "number",
+                "description": "Minimum relevance score (0.0-1.0). Higher values return only more relevant results. Use 0.0 for broad exploration, 0.4+ for precise matches.",
+                "default": 0.4,
+                "minimum": 0.0,
+                "maximum": 1.0
+            }
+        },
+        "required": ["query"],
+        "additionalProperties": false
+    }
+}

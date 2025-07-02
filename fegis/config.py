@@ -9,7 +9,7 @@ from __future__ import annotations
 import os
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, ClassVar
+from typing import Any
 
 from typing_extensions import TypedDict
 
@@ -56,106 +56,18 @@ class FegisConfig:
     schema_version: str = "1.0"
     fegis_version: str = "2.0.0"
     debug: bool = False
+    search_tool_schema: SearchToolSchema | None = None
 
-    # Built-in search tool schema, as defined in the documentation
-    SEARCH_TOOL: ClassVar[SearchToolSchema] = {
-        "name": "SearchMemory",
-        "description": "Search your stored memories using semantic search.\n\nThree search types available: basic (semantic), filtered (by criteria), by_memory_id (specific memory UUID).\n\nFour result views: compact (essential fields), summary (browseable preview), graph (relational metadata network), full (complete memory with metadata).",
-        "inputSchema": {
-            "type": "object",
-            "properties": {
-                "query": {
-                    "type": "string",
-                    "description": "Query or a memory UUID.",
-                    "maxLength": 1000,
-                },
-                "limit": {
-                    "type": "integer",
-                    "description": "Number of memories to show",
-                    "default": 3,
-                    "minimum": 1,
-                    "maximum": 100,
-                },
-                "search_type": {
-                    "type": "string",
-                    "enum": ["basic", "filtered", "by_memory_id"],
-                    "description": "Recall strategy.",
-                    "default": "basic",
-                },
-                "filters": {
-                    "type": "array",
-                    "description": "One or more query filters.",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "field": {
-                                "type": "string",
-                                "enum": [
-                                    "session_id",
-                                    "tool",
-                                    "agent_id",
-                                    "title",
-                                    "context",
-                                    "sequence_order",
-                                    "memory_id",
-                                    "timestamp",
-                                    "preceding_memory_id",
-                                    "archetype_title",
-                                    "archetype_version",
-                                    "schema_version",
-                                ],
-                                "description": "Which field to filter on.",
-                            },
-                            "operator": {
-                                "type": "string",
-                                "enum": [
-                                    "is",
-                                    "is_not",
-                                    "before",
-                                    "after",
-                                    "between",
-                                    "contains",
-                                    "any_of",
-                                ],
-                                "description": "How to match the field: 'is' for exact match, 'is_not' to exclude, 'before/after' for time/order, 'between' for ranges, 'contains' for text search, 'any_of' for multiple options.",
-                            },
-                            "value": {
-                                "description": "Value to match against. Use array [min,max] for 'between', array [item1,item2] for 'any_of', single value for others.",
-                                "oneOf": [
-                                    {"type": "string"},
-                                    {"type": "number"},
-                                    {"type": "array"},
-                                    {
-                                        "type": "object",
-                                        "properties": {"from": {}, "to": {}},
-                                        "required": ["from", "to"],
-                                        "additionalProperties": False,
-                                    },
-                                ],
-                            },
-                        },
-                        "required": ["field", "operator", "value"],
-                        "additionalProperties": False,
-                    },
-                },
-                "detail": {
-                    "type": "string",
-                    "enum": ["compact", "summary", "graph", "full"],
-                    "description": "How much context you want to see: compact (essentials), summary (overview), graph (relational metadata network), full (complete with procedural and episodic memory).",
-                    "default": "summary",
-                },
-                "score_threshold": {
-                    "type": "number",
-                    "description": "Minimum relevance score (0.0-1.0). Higher values return only more relevant results. Use 0.0 for broad exploration, 0.4+ for precise matches.",
-                    "default": 0.4,
-                    "minimum": 0.0,
-                    "maximum": 1.0,
-                },
-            },
-            "required": ["query"],
-            "additionalProperties": False,
-        },
-    }
+    def __post_init__(self):
+        """Load the search tool schema from the JSON file after initialization."""
+        import json
+        from pathlib import Path
+        schema_path = Path(__file__).parent / "search_tool_schema.json"
+        try:
+            with open(schema_path, encoding="utf-8") as f:
+                self.search_tool_schema = json.load(f)
+        except (FileNotFoundError, json.JSONDecodeError) as e:
+            raise RuntimeError(f"Failed to load search tool schema: {e}") from e
 
     @classmethod
     def from_env(cls) -> FegisConfig:
